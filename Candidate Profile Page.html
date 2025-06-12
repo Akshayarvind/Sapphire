@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPPHIRE - Candidate Profile</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS variables from the design philosophy */
+        :root {
+            --color-primary-bg: #1A1A1A;
+            --color-secondary-bg: #2C2C2C;
+            --color-tertiary-bg: #424242;
+            --color-divider: #5E5E5E;
+            --color-text-primary: #E0E0E0;
+            --color-text-secondary: #B0B0B0;
+            --color-accent-green: #28A745; /* Example for success/positive AI score */
+            --color-accent-orange: #FFC107; /* Example for warning/medium AI score */
+            --color-accent-red: #DC3545;   /* Example for alert/low AI score */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-primary-bg); /* Primary dark grey background */
+            color: var(--color-text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Global Header Bar - consistent */
+        .header-bar {
+            background-color: var(--color-secondary-bg);
+            border-bottom: 1px solid var(--color-divider);
+        }
+
+        /* Sidebar Navigation - consistent */
+        .sidebar {
+            background-color: var(--color-secondary-bg);
+            border-right: 1px solid var(--color-divider);
+            width: 250px;
+            transition: width 0.3s ease-in-out;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-item-text {
+            display: block;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .sidebar.collapsed .sidebar-item-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar-item {
+            color: var(--color-text-primary);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 1rem;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-item:hover {
+            background-color: var(--color-tertiary-bg);
+        }
+
+        .sidebar-item.active {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-secondary);
+        }
+
+        .sidebar-item i {
+            width: 24px;
+            text-align: center;
+            margin-right: 1rem;
+        }
+
+        .sidebar.collapsed .sidebar-item i {
+            margin-right: 0;
+        }
+
+        /* Content Area */
+        .content-area {
+            background-color: var(--color-primary-bg);
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Card/Panel Styling */
+        .card {
+            background-color: var(--color-secondary-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        /* Removed hover transform on card for profile page to prevent flicker with nested elements */
+        /* .card:hover {
+            transform: translateY(-2px);
+        } */
+
+        /* Input and Button Consistency */
+        input[type="text"], input[type="email"], input[type="password"],
+        .search-bar input, select, textarea {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-primary);
+            border: 1px solid transparent;
+            transition: border-color 0.2s ease-in-out;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus,
+        .search-bar input:focus, select:focus, textarea:focus {
+            border-color: var(--color-text-secondary);
+        }
+
+        button {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-primary);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--color-divider);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Specific styles for profile page */
+        .candidate-header {
+            background-color: var(--color-secondary-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .ai-insights-panel {
+            border-left: 4px solid var(--color-divider); /* Subtle visual emphasis */
+        }
+        .ai-score-good { color: var(--color-accent-green); }
+        .ai-score-medium { color: var(--color-accent-orange); }
+        .ai-score-bad { color: var(--color-accent-red); }
+
+        .section-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            opacity: 0.9;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-divider);
+        }
+
+        .fixed-action-bar {
+            position: sticky; /* Or fixed, depending on desired behavior */
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(44, 44, 44, 0.95); /* Secondary bg with slight transparency */
+            border-top: 1px solid var(--color-divider);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-end;
+            gap: 1rem;
+            z-index: 50;
+            backdrop-filter: blur(5px); /* Optional: blur background for sticky effect */
+        }
+
+        /* Resume Viewer Placeholder */
+        .resume-viewer {
+            background-color: var(--color-tertiary-bg);
+            height: 400px; /* Fixed height for demo */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-secondary);
+            border-radius: 8px;
+            font-size: 1.1rem;
+            overflow-y: auto; /* Enable scrolling for resume content */
+            padding: 1rem;
+        }
+
+        /* Message Box Styling */
+        #messageBox {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: var(--color-secondary-bg);
+            color: var(--color-text-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #messageBox.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .sidebar:not(.collapsed) {
+                width: 80px;
+            }
+            .sidebar:not(.collapsed) .sidebar-item-text {
+                display: none;
+            }
+            .sidebar:not(.collapsed) .sidebar-item i {
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--color-divider);
+                display: flex;
+                justify-content: space-around;
+                padding: 0.5rem 0;
+            }
+            .sidebar-item {
+                margin: 0.2rem;
+                padding: 0.5rem;
+                flex-direction: column;
+                font-size: 0.75rem;
+            }
+            .sidebar-item i {
+                margin-bottom: 0.25rem;
+                margin-right: 0;
+            }
+            .sidebar-item-text {
+                display: block;
+                font-size: 0.7rem;
+                line-height: 1;
+                opacity: 1;
+                width: auto;
+            }
+            .content-area {
+                padding: 1rem;
+            }
+            .candidate-header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1.5rem;
+            }
+            .candidate-header .flex-grow {
+                margin-bottom: 1rem;
+            }
+            .fixed-action-bar {
+                flex-direction: column;
+                gap: 0.75rem;
+                padding: 1rem;
+            }
+            .fixed-action-bar button {
+                width: 100%;
+            }
+            .ai-insights-panel {
+                border-left: none;
+                border-top: 4px solid var(--color-divider);
+                padding-top: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Bar (Consistent) -->
+    <header class="header-bar p-4 flex items-center justify-between shadow-lg z-20">
+        <div class="flex items-center">
+            <button id="sidebarToggle" class="text-white opacity-80 hover:text-text-secondary transition-colors mr-4 focus:outline-none" aria-label="Toggle sidebar">
+                <i class="fas fa-bars text-lg"></i>
+            </button>
+            <svg class="w-8 h-8 mr-3 text-white opacity-90" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2h1v-3.5c0-.83.67-1.5 1.5-1.5h2.5v2.21c-.61.54-1.28 1.02-2 1.42V19h-1.07zm7-3.93c.88-1.04 1.4-2.31 1.4-3.72 0-.44-.06-.88-.16-1.29L12 9V5h1.07c.75 0 1.47-.14 2.14-.38.74.83 1.25 1.77 1.52 2.79.08.3.14.61.17.93l-1.02 5.06zM9 13.5v-2h2c.83 0 1.5-.67 1.5-1.5V9h-3.5c-.83 0-1.5.67-1.5 1.5v2c0 .83.67 1.5 1.5 1.5h1.5zm5-1.5c0 .83.67 1.5 1.5 1.5h2.5c.83 0 1.5-.67 1.5-1.5V11c0-.83-.67-1.5-1.5-1.5h-2.5c-.83 0-1.5.67-1.5 1.5v2z"/>
+            </svg>
+            <span class="text-xl font-bold text-white opacity-90">SAPPHIRE</span>
+        </div>
+        
+        <div class="relative w-1/3 max-w-md hidden md:block">
+            <input type="text" placeholder="Search anything..." class="w-full pl-10 pr-4 py-2 rounded-lg text-sm bg-tertiary-bg border-transparent focus:border-text-secondary focus:ring-0" aria-label="Global search">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm"></i>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <button class="relative text-white opacity-80 hover:text-text-secondary transition-colors focus:outline-none" aria-label="View notifications">
+                <i class="fas fa-bell text-lg"></i>
+                <span class="absolute top-0 right-0 -mt-1 -mr-1 px-1.5 py-0.5 text-xs font-bold bg-red-600 rounded-full text-white">3</span>
+            </button>
+            <button class="flex items-center space-x-2 text-white opacity-80 hover:opacity-100 transition-opacity focus:outline-none" aria-label="User profile and settings">
+                <img src="https://placehold.co/32x32/424242/E0E0E0?text=A" alt="User Avatar" class="rounded-full border border-divider">
+                <span id="userNameDisplay" class="font-medium text-sm hidden lg:block">Akshay Arvind</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 main-layout">
+        <!-- Sidebar Navigation (Consistent) -->
+        <aside class="sidebar h-full flex flex-col pt-4" id="sidebar">
+            <div class="flex-1">
+                <div class="sidebar-item" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="sidebar-item-text">Dashboard</span>
+                </div>
+                <div class="sidebar-item" data-page="job-listings">
+                    <i class="fas fa-briefcase"></i>
+                    <span class="sidebar-item-text">Job Listings</span>
+                </div>
+                <div class="sidebar-item active" data-page="applicants">
+                    <i class="fas fa-users"></i>
+                    <span class="sidebar-item-text">Applicants</span>
+                </div>
+                <div class="sidebar-item" data-page="interviews">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="sidebar-item-text">Interviews</span>
+                </div>
+                <div class="sidebar-item" data-page="reports">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="sidebar-item-text">Reports</span>
+                </div>
+                <div class="sidebar-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span class="sidebar-item-text">Settings</span>
+                </div>
+            </div>
+            <div class="sidebar-item mb-4" data-page="logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="sidebar-item-text">Logout</span>
+            </div>
+        </aside>
+
+        <!-- Content Area: Candidate Profile -->
+        <main class="content-area">
+            <h1 class="text-3xl font-bold mb-8 text-white opacity-90">Candidate Profile</h1>
+
+            <!-- Candidate Header -->
+            <div class="candidate-header mb-8">
+                <img id="candidateAvatar" src="https://placehold.co/80x80/424242/E0E0E0?text=JD" alt="Candidate Avatar" class="rounded-full w-20 h-20 border-2 border-divider flex-shrink-0">
+                <div class="flex-grow">
+                    <h2 id="candidateName" class="text-3xl font-bold text-white opacity-90">Jane Doe</h2>
+                    <p id="candidateTitle" class="text-lg text-text-secondary">Senior Software Engineer Applicant</p>
+                    <div class="flex items-center text-sm text-text-secondary mt-2">
+                        <i class="fas fa-envelope mr-2"></i><span id="candidateEmail">jane.doe@example.com</span>
+                        <i class="fas fa-phone ml-4 mr-2"></i><span id="candidatePhone">+1 (555) 123-4567</span>
+                        <span id="candidateStatus" class="ml-4 px-3 py-1 rounded-full text-xs font-semibold bg-tertiary-bg text-text-primary">Status: New</span>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 flex gap-2">
+                    <button class="px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors">Edit Profile</button>
+                    <button class="px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors">Share</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Main Content Column (2/3 width on large screens) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- AI Insights Panel -->
+                    <div class="card ai-insights-panel">
+                        <h3 class="section-header">AI Insights</h3>
+                        <p class="text-text-secondary mb-3"><span class="font-medium text-white opacity-90">AI Candidate Summary:</span> Highly experienced software engineer with a strong background in scalable backend development and a proven track record in leadership roles.</p>
+                        <p class="text-text-secondary mb-3">
+                            <span class="font-medium text-white opacity-90">AI Match Score:</span> 
+                            <span id="aiMatchScore" class="font-bold text-xl ai-score-good">85%</span> (for Senior Software Engineer)
+                        </p>
+                        <p class="text-text-secondary mb-3">
+                            <span class="font-medium text-white opacity-90">Predicted Retention Score:</span> 
+                            <span id="predictedRetentionScore" class="font-bold text-xl ai-score-medium">75%</span>
+                        </p>
+                        <p class="text-text-secondary">
+                            <span class="font-medium text-white opacity-90">Bias Flagging:</span> 
+                            <span id="biasFlagging" class="text-sm text-yellow-400"><i class="fas fa-exclamation-triangle mr-1"></i>Potential age-related bias detected in resume formatting.</span>
+                        </p>
+                    </div>
+
+                    <!-- Resume/Documents Viewer -->
+                    <div class="card">
+                        <h3 class="section-header">Resume & Documents</h3>
+                        <div class="resume-viewer">
+                            <p class="text-text-secondary">Simulated Resume Content (PDF/DOCX viewer placeholder)</p>
+                            <p class="text-text-secondary mt-2">
+                                Jane Doe's Resume:<br>
+                                - 5+ years experience in Node.js, Python, AWS.<br>
+                                - Led 3 projects from conception to deployment.<br>
+                                - Strong problem-solving and communication skills.<br>
+                                - Bachelor's in Computer Science.
+                            </p>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <button class="px-3 py-1 text-sm bg-tertiary-bg hover:bg-divider transition-colors">Download Resume</button>
+                            <button class="px-3 py-1 text-sm bg-tertiary-bg hover:bg-divider transition-colors">Upload New</button>
+                        </div>
+                    </div>
+
+                    <!-- Experience & Education -->
+                    <div class="card">
+                        <h3 class="section-header">Experience & Education</h3>
+                        <div class="space-y-4 text-text-secondary">
+                            <div>
+                                <h4 class="font-semibold text-white opacity-90 text-lg">Senior Backend Developer <span class="font-normal text-text-secondary text-base">- Tech Solutions Inc.</span></h4>
+                                <p class="text-sm">Jan 2022 - Present</p>
+                                <ul class="list-disc list-inside text-sm mt-1">
+                                    <li>Led development of microservices handling over 1M requests/day.</li>
+                                    <li>Mentored junior developers and performed code reviews.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-white opacity-90 text-lg">Software Engineer <span class="font-normal text-text-secondary text-base">- Innovate Corp.</span></h4>
+                                <p class="text-sm">Jun 2019 - Dec 2021</p>
+                                <ul class="list-disc list-inside text-sm mt-1">
+                                    <li>Developed RESTful APIs and integrated with third-party services.</li>
+                                    <li>Contributed to database design and optimization.</li>
+                                </ul>
+                            </div>
+                            <div class="border-t border-divider pt-4 mt-4">
+                                <h4 class="font-semibold text-white opacity-90 text-lg">Master of Science in Computer Science <span class="font-normal text-text-secondary text-base">- University of Tech</span></h4>
+                                <p class="text-sm">2017 - 2019</p>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-white opacity-90 text-lg">Bachelor of Engineering in Software Engineering <span class="font-normal text-text-secondary text-base">- State University</span></h4>
+                                <p class="text-sm">2013 - 2017</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills -->
+                    <div class="card">
+                        <h3 class="section-header">Skills</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-tertiary-bg rounded-full text-sm text-text-primary opacity-80">Node.js</span>
+                            <span class="px-3 py-1 bg-tertiary-bg rounded-full text-sm text-text-primary opacity-80">Python</span>
+                            <span class="px-3 py-1 bg-tertiary-bg rounded-full text-sm text-text-primary opacity-80">AWS</span>
+                            <span class="px-3 py-1 bg-tertiary-bg rounded-full text-sm text-text-primary opacity-80">MongoDB</span>
+                            <span class="px-3 py-1 bg-tertiary-bg rounded-full text-sm text-text-primary opacity-80">RESTful APIs</span>
+                            <span class="px-3 py-1 bg-tertiary-bg rounded-full text-sm text-text-primary opacity-80">Microservices</span>
+                            <span class="px-3 py-1 bg-tertiary-bg rounded-full text-sm text-text-primary opacity-80">Docker</span>
+                            <span class="px-3 py-1 bg-tertiary-bg rounded-full text-sm text-text-primary opacity-80">Git</span>
+                            <span class="px-3 py-1 bg-tertiary-bg rounded-full text-sm text-text-primary opacity-80">Agile Methodologies</span>
+                        </div>
+                    </div>
+
+                    <!-- Internal Notes -->
+                    <div class="card">
+                        <h3 class="section-header">Internal Notes</h3>
+                        <textarea class="w-full h-32 p-3 text-sm bg-tertiary-bg border-transparent rounded-lg resize-y" placeholder="Add internal notes about this candidate..."></textarea>
+                        <button class="mt-3 px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors">Save Note</button>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Column (1/3 width on large screens) -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Application History -->
+                    <div class="card">
+                        <h3 class="section-header">Application History</h3>
+                        <ul class="space-y-3 text-sm text-text-secondary">
+                            <li><span class="font-medium text-white opacity-90">Senior Software Engineer:</span> New (Applied on 2024-05-10)</li>
+                            <li><span class="font-medium text-white opacity-90">Backend Developer:</span> Rejected (Applied on 2023-11-15)</li>
+                            <li><span class="font-medium text-white opacity-90">Junior Dev Role:</span> Interviewed (Applied on 2023-03-20)</li>
+                        </ul>
+                    </div>
+
+                    <!-- Interview Feedback -->
+                    <div class="card">
+                        <h3 class="section-header">Interview Feedback</h3>
+                        <ul class="space-y-3 text-sm text-text-secondary">
+                            <li><span class="font-medium text-white opacity-90">Technical Interview (2024-05-20)</span> by John Smith: Strong technical skills, good problem solver. Areas for improvement: system design. (Score: 4/5)</li>
+                            <li><span class="font-medium text-white opacity-90">Behavioral Interview (2024-05-22)</span> by Sarah Green: Excellent cultural fit, clear communication. (Score: 5/5)</li>
+                        </ul>
+                        <button class="mt-3 px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors">Add Feedback</button>
+                    </div>
+
+                    <!-- Assessments -->
+                    <div class="card">
+                        <h3 class="section-header">Assessments</h3>
+                        <ul class="space-y-3 text-sm text-text-secondary">
+                            <li><span class="font-medium text-white opacity-90">Coding Challenge:</span> Completed (Score: 90%)</li>
+                            <li><span class="font-medium text-white opacity-90">Communication Test:</span> Pending</li>
+                        </ul>
+                        <button class="mt-3 px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors">Assign New Assessment</button>
+                    </div>
+
+                    <!-- Activity Log -->
+                    <div class="card">
+                        <h3 class="section-header">Activity Log</h3>
+                        <ul class="space-y-3 text-sm text-text-secondary">
+                            <li><span class="font-medium text-white opacity-90">2024-05-22:</span> Status updated to "Interview".</li>
+                            <li><span class="font-medium text-white opacity-90">2024-05-20:</span> Technical interview conducted.</li>
+                            <li><span class="font-medium text-white opacity-90">2024-05-15:</span> Resume parsed by AI.</li>
+                            <li><span class="font-medium text-white opacity-90">2024-05-10:</span> Application received for Senior Software Engineer.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fixed Action Bar -->
+            <div class="fixed-action-bar">
+                <button class="px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors" id="scheduleInterviewFromProfileBtn">
+                    <i class="fas fa-calendar-alt mr-2"></i>Schedule Interview
+                </button>
+                <button class="px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors">
+                    <i class="fas fa-paper-plane mr-2"></i>Send Message
+                </button>
+                <button class="px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors">
+                    <i class="fas fa-check-circle mr-2"></i>Extend Offer
+                </button>
+                <button class="px-4 py-2 text-sm bg-red-700 hover:bg-red-800 transition-colors">
+                    <i class="fas fa-times-circle mr-2"></i>Reject Candidate
+                </button>
+            </div>
+
+            <!-- Message Box for notifications -->
+            <div id="messageBox" class="message-box"></div>
+        </main>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarItems = document.querySelectorAll('.sidebar-item');
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const messageBox = document.getElementById('messageBox');
+        const scheduleInterviewFromProfileBtn = document.getElementById('scheduleInterviewFromProfileBtn');
+
+        // --- Simulated User Data (in a real app, this would come from backend auth) ---
+        const loggedInUser = {
+            name: "Akshay Arvind",
+            email: "akshay@example.com"
+        };
+        userNameDisplay.textContent = loggedInUser.name;
+
+        // --- Simulated Candidate Data (in a real app, this would come from URL parameter and backend) ---
+        // For demonstration, we'll use fixed data, but in a real app, you'd parse `id` from URL
+        // and fetch data based on that ID.
+        const urlParams = new URLSearchParams(window.location.search);
+        const candidateId = urlParams.get('id'); // e.g., ?id=candidate123
+
+        const simulatedCandidateData = {
+            'candidate123': {
+                name: "Jane Doe",
+                title: "Senior Software Engineer Applicant",
+                email: "jane.doe@example.com",
+                phone: "+1 (555) 123-4567",
+                status: "New",
+                aiSummary: "Highly experienced software engineer with a strong background in scalable backend development and a proven track record in leadership roles.",
+                aiMatchScore: "85%",
+                aiMatchScoreClass: "ai-score-good", // Used for color styling
+                predictedRetentionScore: "75%",
+                predictedRetentionScoreClass: "ai-score-medium",
+                biasFlagging: "Potential age-related bias detected in resume formatting.",
+                avatarText: "JD",
+                resumeContent: `
+                    Jane Doe's Resume (Full Text):
+                    EDUCATION
+                    Master of Science in Computer Science | University of Tech | 2017 - 2019
+                    Bachelor of Engineering in Software Engineering | State University | 2013 - 2017
+
+                    EXPERIENCE
+                    Senior Backend Developer | Tech Solutions Inc. | Jan 2022 - Present
+                    - Led development of microservices handling over 1M requests/day.
+                    - Mentored junior developers and performed code reviews.
+                    Software Engineer | Innovate Corp. | Jun 2019 - Dec 2021
+                    - Developed RESTful APIs and integrated with third-party services.
+                    - Contributed to database design and optimization.
+
+                    SKILLS
+                    Node.js, Python, AWS, MongoDB, RESTful APIs, Microservices, Docker, Git, Agile Methodologies
+                    `
+            },
+            'candidate456': { // Another dummy candidate
+                name: "John Smith",
+                title: "Product Manager Candidate",
+                email: "john.s@example.com",
+                phone: "+1 (555) 987-6543",
+                status: "Interview",
+                aiSummary: "Strategic product leader with a strong understanding of market trends and experience in agile product development.",
+                aiMatchScore: "78%",
+                aiMatchScoreClass: "ai-score-medium",
+                predictedRetentionScore: "80%",
+                predictedRetentionScoreClass: "ai-score-good",
+                biasFlagging: "No significant bias detected.",
+                avatarText: "JS",
+                resumeContent: `
+                    John Smith's Resume (Full Text):
+                    PROFESSIONAL EXPERIENCE
+                    Product Manager | Global Innovations | May 2021 - Present
+                    - Defined product vision and roadmap, leading cross-functional teams.
+                    - Launched 2 major products increasing revenue by 20%.
+                    Associate Product Manager | Startup X | Jan 2019 - Apr 2021
+                    - Conducted market research and competitive analysis.
+                    - Managed user feedback and feature prioritization.
+
+                    EDUCATION
+                    MBA | Business School | 2017 - 2018
+                    Bachelor of Science in Marketing | University of Commerce | 2013 - 2017
+
+                    SKILLS
+                    Product Management, Agile, Scrum, Market Research, UX/UI, Data Analysis, SQL
+                    `
+            }
+        };
+
+        const currentCandidate = simulatedCandidateData[candidateId || 'candidate123']; // Default to Jane Doe
+
+        // Populate Candidate Header
+        document.getElementById('candidateAvatar').src = `https://placehold.co/80x80/424242/E0E0E0?text=${currentCandidate.avatarText}`;
+        document.getElementById('candidateName').textContent = currentCandidate.name;
+        document.getElementById('candidateTitle').textContent = currentCandidate.title;
+        document.getElementById('candidateEmail').textContent = currentCandidate.email;
+        document.getElementById('candidatePhone').textContent = currentCandidate.phone;
+        document.getElementById('candidateStatus').textContent = `Status: ${currentCandidate.status}`;
+
+        // Populate AI Insights Panel
+        document.querySelector('.ai-insights-panel p:nth-child(2) span:nth-child(2)').textContent = currentCandidate.aiSummary;
+        const aiMatchScoreSpan = document.getElementById('aiMatchScore');
+        aiMatchScoreSpan.textContent = currentCandidate.aiMatchScore;
+        aiMatchScoreSpan.className = `font-bold text-xl ${currentCandidate.aiMatchScoreClass}`;
+
+        const predictedRetentionScoreSpan = document.getElementById('predictedRetentionScore');
+        predictedRetentionScoreSpan.textContent = currentCandidate.predictedRetentionScore;
+        predictedRetentionScoreSpan.className = `font-bold text-xl ${currentCandidate.predictedRetentionScoreClass}`;
+
+        document.getElementById('biasFlagging').innerHTML = currentCandidate.biasFlagging.includes('Bias detected') ?
+            `<span class="text-red-400"><i class="fas fa-exclamation-triangle mr-1"></i>${currentCandidate.biasFlagging}</span>` :
+            `<span class="text-text-secondary">${currentCandidate.biasFlagging}</span>`;
+
+
+        // Populate Resume/Documents Viewer (simple text for now)
+        document.querySelector('.resume-viewer').textContent = currentCandidate.resumeContent;
+
+
+        /**
+         * Displays a message in the message box.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success', 'error', or 'info'.
+         */
+        function showMessage(message, type = 'info') {
+            messageBox.textContent = message;
+            messageBox.className = 'message-box show'; // Reset classes and add 'show'
+            // For a real app, you might add type-specific classes like 'success' or 'error'
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // --- Sidebar Toggle Functionality ---
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+        // --- Sidebar Navigation Functionality (Using full page redirects) ---
+        sidebarItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // Remove active class from all sidebar items
+                sidebarItems.forEach(i => i.classList.remove('active'));
+                // Add active class to the clicked item
+                item.classList.add('active'); // This will be reset on new page load, but good for visual feedback
+
+                const page = item.dataset.page;
+                console.log(`Navigating to: ${page} page`);
+
+                switch (page) {
+                    case 'dashboard':
+                        window.location.href = 'dashboard.html';
+                        break;
+                    case 'job-listings':
+                        window.location.href = 'job_listings.html';
+                        break;
+                    case 'applicants':
+                        window.location.href = 'applicants.html';
+                        break;
+                    case 'interviews':
+                        window.location.href = 'interviews.html'; // Redirect to the new Interviews page
+                        break;
+                    case 'reports':
+                        window.location.href = 'reports.html'; // Redirect to the new Reports page
+                        break;
+                    case 'settings':
+                        window.location.href = 'settings.html'; // Future page
+                        break;
+                    case 'logout':
+                        showMessage('Logging out...');
+                        setTimeout(() => {
+                            window.location.href = 'index.html'; // Redirect to login page
+                        }, 1000);
+                        break;
+                }
+            });
+        });
+
+        // --- Simulate Actions on Candidate Profile Page ---
+        document.querySelectorAll('.fixed-action-bar button, .candidate-header button, .card button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const action = e.target.textContent.trim();
+                const candidateName = document.getElementById('candidateName').textContent.trim();
+                
+                if (e.target.id === 'scheduleInterviewFromProfileBtn') {
+                    // Pre-fill candidate for scheduling
+                    window.location.href = `interviews.html?candidate=${encodeURIComponent(candidateName)}`;
+                    return;
+                }
+
+                showMessage(`"${action}" action for ${candidateName} (not implemented yet)...`, 'info');
+                console.log(`Action: "${action}" clicked for ${candidateName}`);
+                // In a real app, these would trigger backend calls or open modals
+            });
+        });
+
+        console.log("SAPPHIRE Candidate Profile page loaded!");
+    </script>
+</body>
+</html>

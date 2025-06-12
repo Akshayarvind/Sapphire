@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPPHIRE - Sign In / Sign Up</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS to override/enhance Tailwind and apply specific design philosophy */
+        :root {
+            --color-primary-bg: #1A1A1A;
+            --color-secondary-bg: #2C2C2C;
+            --color-tertiary-bg: #424242;
+            --color-divider: #5E5E5E;
+            --color-text-primary: #E0E0E0;
+            --color-text-secondary: #B0B0B0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-primary-bg); /* Primary dark grey background */
+            color: var(--color-text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Prevent scrollbar for this simple page */
+        }
+
+        .form-card {
+            background-color: var(--color-secondary-bg); /* Secondary dark grey for card */
+            border-radius: 12px; /* Rounded corners */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); /* Subtle shadow for depth */
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px; /* Max width for the form card */
+            position: relative;
+            z-index: 10;
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            background-color: var(--color-tertiary-bg); /* Tertiary dark grey for input fields */
+            color: var(--color-text-primary);
+            border: 1px solid transparent; /* Subtle border that brightens on focus */
+            transition: border-color 0.2s ease-in-out;
+            padding: 0.75rem 1rem;
+            border-radius: 8px; /* Rounded input fields */
+            outline: none; /* Remove default outline */
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="text"]:focus {
+            border-color: var(--color-text-secondary); /* Brighten border on focus */
+        }
+
+        button {
+            background-color: var(--color-tertiary-bg); /* Tertiary dark grey for buttons */
+            color: var(--color-text-primary);
+            border-radius: 8px; /* Rounded buttons */
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--color-divider); /* Subtle lighter grey on hover */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); /* Lift effect */
+        }
+
+        .toggle-link {
+            color: var(--color-text-primary); /* Light grey for links */
+            transition: color 0.2s ease-in-out;
+        }
+
+        .toggle-link:hover {
+            color: var(--color-text-secondary); /* Slightly darker light grey on hover */
+        }
+
+        /* Message Box Styling */
+        #messageBox {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: var(--color-secondary-bg);
+            color: var(--color-text-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #messageBox.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Monochromatic logo styling */
+        .logo-icon {
+            width: 80px; /* Adjust size as needed */
+            height: 80px;
+            color: var(--color-text-primary); /* Use text color for monochromatic effect */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .form-card {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            body {
+                align-items: flex-start; /* Align to top on small screens */
+                padding-top: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-card flex flex-col items-center">
+        <!-- Monochromatic Logo (SVG placeholder) -->
+        <svg class="logo-icon mb-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2h1v-3.5c0-.83.67-1.5 1.5-1.5h2.5v2.21c-.61.54-1.28 1.02-2 1.42V19h-1.07zm7-3.93c.88-1.04 1.4-2.31 1.4-3.72 0-.44-.06-.88-.16-1.29L12 9V5h1.07c.75 0 1.47-.14 2.14-.38.74.83 1.25 1.77 1.52 2.79.08.3.14.61.17.93l-1.02 5.06zM9 13.5v-2h2c.83 0 1.5-.67 1.5-1.5V9h-3.5c-.83 0-1.5.67-1.5 1.5v2c0 .83.67 1.5 1.5 1.5h1.5zm5-1.5c0 .83.67 1.5 1.5 1.5h2.5c.83 0 1.5-.67 1.5-1.5V11c0-.83-.67-1.5-1.5-1.5h-2.5c-.83 0-1.5.67-1.5 1.5v2z"/>
+        </svg>
+        <h1 class="text-2xl font-semibold mb-6">Welcome to SAPPHIRE</h1>
+
+        <form id="authForm" class="w-full">
+            <!-- Sign Up fields, initially hidden -->
+            <div id="signUpFields" class="space-y-4 mb-4 hidden">
+                <div>
+                    <label for="username" class="block text-sm font-medium mb-1 text-white opacity-80">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" class="w-full">
+                </div>
+            </div>
+
+            <!-- Common fields for both Sign In and Sign Up -->
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium mb-1 text-white opacity-80">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" class="w-full">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium mb-1 text-white opacity-80">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" class="w-full">
+                </div>
+            </div>
+
+            <button type="submit" id="submitButton" class="w-full font-medium">Sign In</button>
+        </form>
+
+        <p class="mt-6 text-sm text-center">
+            <span id="toggleText" class="text-white opacity-80">Don't have an account?</span>
+            <a href="#" id="toggleAuthMode" class="toggle-link ml-1 font-medium">Sign Up</a>
+        </p>
+
+        <!-- Message Box for notifications -->
+        <div id="messageBox" class="message-box"></div>
+    </div>
+
+    <script>
+        const authForm = document.getElementById('authForm');
+        const submitButton = document.getElementById('submitButton');
+        const toggleAuthMode = document.getElementById('toggleAuthMode');
+        const toggleText = document.getElementById('toggleText');
+        const signUpFields = document.getElementById('signUpFields');
+        const messageBox = document.getElementById('messageBox');
+
+        let isSignInMode = true; // State to track if currently in Sign In mode
+
+        /**
+         * Displays a message in the message box.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success' or 'error' to influence styling (though not implemented in this basic example, good for future).
+         */
+        function showMessage(message, type = 'info') {
+            messageBox.textContent = message;
+            messageBox.className = 'message-box show'; // Reset classes and add 'show'
+            // For a real app, you might add type-specific classes like 'success' or 'error'
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        /**
+         * Toggles between Sign In and Sign Up forms.
+         */
+        toggleAuthMode.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default link behavior
+            isSignInMode = !isSignInMode; // Toggle the mode
+
+            if (isSignInMode) {
+                // Switch to Sign In mode
+                signUpFields.classList.add('hidden');
+                submitButton.textContent = 'Sign In';
+                toggleText.textContent = "Don't have an account?";
+                toggleAuthMode.textContent = 'Sign Up';
+                // Remove required attribute from username for sign-in
+                document.getElementById('username').removeAttribute('required');
+            } else {
+                // Switch to Sign Up mode
+                signUpFields.classList.remove('hidden');
+                submitButton.textContent = 'Sign Up';
+                toggleText.textContent = 'Already have an account?';
+                toggleAuthMode.textContent = 'Sign In';
+                // Add required attribute to username for sign-up
+                document.getElementById('username').setAttribute('required', 'true');
+            }
+        });
+
+        /**
+         * Handles form submission (Sign In or Sign Up).
+         * For a real application, this would involve sending data to a backend.
+         */
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Prevent default form submission
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value; // Only relevant for Sign Up
+
+            // Basic client-side validation
+            if (!email || !password) {
+                showMessage('Email and password are required!', 'error');
+                return;
+            }
+            if (!email.includes('@') || !email.includes('.')) {
+                showMessage('Please enter a valid email address.', 'error');
+                return;
+            }
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters long.', 'error');
+                return;
+            }
+
+            if (!isSignInMode && !username) { // If in Sign Up mode and username is empty
+                showMessage('Username is required for Sign Up!', 'error');
+                return;
+            }
+
+            if (isSignInMode) {
+                // Simulate Sign In API call
+                console.log('Attempting Sign In:', { email, password });
+                // In a real app: fetch('/api/signin', { method: 'POST', body: JSON.stringify({ email, password }) })
+                // .then(response => response.json()).then(data => { ... })
+                showMessage('Signing in...', 'info');
+                setTimeout(() => {
+                    // Updated simulated login credentials
+                    if (email === 'akshay@example.com' && password === 'admin') { // Using akshay@example.com to simulate the username
+                        showMessage('Sign In successful! Redirecting to Dashboard...', 'success');
+                        window.location.href = 'dashboard.html'; // Redirect to a placeholder dashboard
+                    } else {
+                        showMessage('Invalid email or password.', 'error');
+                    }
+                }, 1500); // Simulate network delay
+            } else {
+                // Simulate Sign Up API call
+                console.log('Attempting Sign Up:', { username, email, password });
+                // In a real app: fetch('/api/signup', { method: 'POST', body: JSON.stringify({ username, email, password }) })
+                // .then(response => response.json()).then(data => { ... })
+                showMessage('Registering account...', 'info');
+                setTimeout(() => {
+                    // Simulate successful registration
+                    showMessage('Sign Up successful! You can now sign in.', 'success');
+                    // Automatically switch to sign-in mode after successful registration
+                    isSignInMode = true;
+                    signUpFields.classList.add('hidden');
+                    submitButton.textContent = 'Sign In';
+                    toggleText.textContent = "Don't have an account?";
+                    toggleAuthMode.textContent = 'Sign Up';
+                    document.getElementById('username').value = ''; // Clear username field
+                    document.getElementById('email').value = ''; // Clear email field
+                    document.getElementById('password').value = ''; // Clear password field
+                    document.getElementById('username').removeAttribute('required');
+
+                }, 1500); // Simulate network delay
+            }
+        });
+    </script>
+</body>
+</html>

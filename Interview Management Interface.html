@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPPHIRE - Interviews</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS variables from the design philosophy */
+        :root {
+            --color-primary-bg: #1A1A1A;
+            --color-secondary-bg: #2C2C2C;
+            --color-tertiary-bg: #424242;
+            --color-divider: #5E5E5E;
+            --color-text-primary: #E0E0E0;
+            --color-text-secondary: #B0B0B0;
+            --color-accent-blue: #007BFF; /* Example for active calendar day/event */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-primary-bg); /* Primary dark grey background */
+            color: var(--color-text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Global Header Bar - consistent */
+        .header-bar {
+            background-color: var(--color-secondary-bg);
+            border-bottom: 1px solid var(--color-divider);
+        }
+
+        /* Sidebar Navigation - consistent */
+        .sidebar {
+            background-color: var(--color-secondary-bg);
+            border-right: 1px solid var(--color-divider);
+            width: 250px;
+            transition: width 0.3s ease-in-out;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-item-text {
+            display: block;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .sidebar.collapsed .sidebar-item-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar-item {
+            color: var(--color-text-primary);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 1rem;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-item:hover {
+            background-color: var(--color-tertiary-bg);
+        }
+
+        .sidebar-item.active {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-secondary);
+        }
+
+        .sidebar-item i {
+            width: 24px;
+            text-align: center;
+            margin-right: 1rem;
+        }
+
+        .sidebar.collapsed .sidebar-item i {
+            margin-right: 0;
+        }
+
+        /* Content Area */
+        .content-area {
+            background-color: var(--color-primary-bg);
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Card/Panel Styling */
+        .card {
+            background-color: var(--color-secondary-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Input and Button Consistency */
+        input[type="text"], input[type="email"], input[type="password"],
+        input[type="date"], input[type="time"],
+        .search-bar input, select, textarea {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-primary);
+            border: 1px solid transparent;
+            transition: border-color 0.2s ease-in-out;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus,
+        input[type="date"]:focus, input[type="time"]:focus,
+        .search-bar input:focus, select:focus, textarea:focus {
+            border-color: var(--color-text-secondary);
+        }
+
+        button {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-primary);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--color-divider);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Calendar Styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px; /* Small gap between days */
+            text-align: center;
+        }
+        .calendar-header {
+            background-color: var(--color-tertiary-bg);
+            padding: 0.75rem;
+            font-weight: 600;
+            border-radius: 8px;
+            color: var(--color-text-secondary);
+        }
+        .calendar-day {
+            background-color: var(--color-tertiary-bg);
+            padding: 1rem 0.5rem;
+            border-radius: 8px;
+            min-height: 100px; /* Ensure days have some height for content */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .calendar-day:hover {
+            background-color: var(--color-divider);
+        }
+        .calendar-day.today {
+            border: 2px solid var(--color-accent-blue);
+        }
+        .calendar-day.empty {
+            background-color: #333333; /* Slightly darker empty days */
+            color: var(--color-text-secondary);
+            opacity: 0.6;
+            cursor: default;
+        }
+        .calendar-day-number {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .calendar-event {
+            background-color: rgba(0, 123, 255, 0.7); /* Accent blue for events */
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+            width: calc(100% - 10px); /* Adjust width slightly */
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: background-color 0.2s ease-in-out;
+        }
+        .calendar-event:hover {
+            background-color: var(--color-accent-blue);
+        }
+
+        /* Message Box Styling */
+        #messageBox {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: var(--color-secondary-bg);
+            color: var(--color-text-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #messageBox.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--color-secondary-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .sidebar:not(.collapsed) {
+                width: 80px;
+            }
+            .sidebar:not(.collapsed) .sidebar-item-text {
+                display: none;
+            }
+            .sidebar:not(.collapsed) .sidebar-item i {
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--color-divider);
+                display: flex;
+                justify-content: space-around;
+                padding: 0.5rem 0;
+            }
+            .sidebar-item {
+                margin: 0.2rem;
+                padding: 0.5rem;
+                flex-direction: column;
+                font-size: 0.75rem;
+            }
+            .sidebar-item i {
+                margin-bottom: 0.25rem;
+                margin-right: 0;
+            }
+            .sidebar-item-text {
+                display: block;
+                font-size: 0.7rem;
+                line-height: 1;
+                opacity: 1;
+                width: auto;
+            }
+            .content-area {
+                padding: 1rem;
+            }
+            .calendar-grid {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* More flexible grid for small screens */
+            }
+            .calendar-day {
+                min-height: 80px;
+                padding: 0.5rem;
+            }
+            .calendar-day-number {
+                font-size: 1rem;
+            }
+            .calendar-event {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.3rem;
+            }
+            .modal-content {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Bar (Consistent) -->
+    <header class="header-bar p-4 flex items-center justify-between shadow-lg z-20">
+        <div class="flex items-center">
+            <button id="sidebarToggle" class="text-white opacity-80 hover:text-text-secondary transition-colors mr-4 focus:outline-none" aria-label="Toggle sidebar">
+                <i class="fas fa-bars text-lg"></i>
+            </button>
+            <svg class="w-8 h-8 mr-3 text-white opacity-90" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2h1v-3.5c0-.83.67-1.5 1.5-1.5h2.5v2.21c-.61.54-1.28 1.02-2 1.42V19h-1.07zm7-3.93c.88-1.04 1.4-2.31 1.4-3.72 0-.44-.06-.88-.16-1.29L12 9V5h1.07c.75 0 1.47-.14 2.14-.38.74.83 1.25 1.77 1.52 2.79.08.3.14.61.17.93l-1.02 5.06zM9 13.5v-2h2c.83 0 1.5-.67 1.5-1.5V9h-3.5c-.83 0-1.5.67-1.5 1.5v2c0 .83.67 1.5 1.5 1.5h1.5zm5-1.5c0 .83.67 1.5 1.5 1.5h2.5c.83 0 1.5-.67 1.5-1.5V11c0-.83-.67-1.5-1.5-1.5h-2.5c-.83 0-1.5.67-1.5 1.5v2z"/>
+            </svg>
+            <span class="text-xl font-bold text-white opacity-90">SAPPHIRE</span>
+        </div>
+        
+        <div class="relative w-1/3 max-w-md hidden md:block">
+            <input type="text" placeholder="Search anything..." class="w-full pl-10 pr-4 py-2 rounded-lg text-sm bg-tertiary-bg border-transparent focus:border-text-secondary focus:ring-0" aria-label="Global search">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm"></i>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <button class="relative text-white opacity-80 hover:text-text-secondary transition-colors focus:outline-none" aria-label="View notifications">
+                <i class="fas fa-bell text-lg"></i>
+                <span class="absolute top-0 right-0 -mt-1 -mr-1 px-1.5 py-0.5 text-xs font-bold bg-red-600 rounded-full text-white">3</span>
+            </button>
+            <button class="flex items-center space-x-2 text-white opacity-80 hover:opacity-100 transition-opacity focus:outline-none" aria-label="User profile and settings">
+                <img src="https://placehold.co/32x32/424242/E0E0E0?text=A" alt="User Avatar" class="rounded-full border border-divider">
+                <span id="userNameDisplay" class="font-medium text-sm hidden lg:block">Akshay Arvind</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 main-layout">
+        <!-- Sidebar Navigation (Consistent) -->
+        <aside class="sidebar h-full flex flex-col pt-4" id="sidebar">
+            <div class="flex-1">
+                <div class="sidebar-item" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="sidebar-item-text">Dashboard</span>
+                </div>
+                <div class="sidebar-item" data-page="job-listings">
+                    <i class="fas fa-briefcase"></i>
+                    <span class="sidebar-item-text">Job Listings</span>
+                </div>
+                <div class="sidebar-item" data-page="applicants">
+                    <i class="fas fa-users"></i>
+                    <span class="sidebar-item-text">Applicants</span>
+                </div>
+                <div class="sidebar-item active" data-page="interviews">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="sidebar-item-text">Interviews</span>
+                </div>
+                <div class="sidebar-item" data-page="reports">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="sidebar-item-text">Reports</span>
+                </div>
+                <div class="sidebar-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span class="sidebar-item-text">Settings</span>
+                </div>
+            </div>
+            <div class="sidebar-item mb-4" data-page="logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="sidebar-item-text">Logout</span>
+            </div>
+        </aside>
+
+        <!-- Content Area: Interviews -->
+        <main class="content-area">
+            <h1 class="text-3xl font-bold mb-8 text-white opacity-90">Interviews</h1>
+
+            <!-- Calendar Controls and Schedule Button -->
+            <div class="bg-secondary-bg p-6 rounded-lg mb-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <button id="prevMonth" class="px-4 py-2 rounded-lg bg-tertiary-bg hover:bg-divider transition-colors text-white opacity-90 font-medium">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h2 id="currentMonthYear" class="text-xl font-semibold text-white opacity-90 w-48 text-center">June 2024</h2>
+                    <button id="nextMonth" class="px-4 py-2 rounded-lg bg-tertiary-bg hover:bg-divider transition-colors text-white opacity-90 font-medium">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <button id="scheduleInterviewBtn" class="flex items-center justify-center p-3 rounded-lg bg-tertiary-bg hover:bg-divider transition-colors text-white opacity-90 font-medium whitespace-nowrap">
+                    <i class="fas fa-calendar-plus mr-2"></i>
+                    Schedule New Interview
+                </button>
+            </div>
+
+            <!-- Calendar View -->
+            <div class="card p-0">
+                <div class="calendar-grid text-sm">
+                    <div class="calendar-header">Sun</div>
+                    <div class="calendar-header">Mon</div>
+                    <div class="calendar-header">Tue</div>
+                    <div class="calendar-header">Wed</div>
+                    <div class="calendar-header">Thu</div>
+                    <div class="calendar-header">Fri</div>
+                    <div class="calendar-header">Sat</div>
+                </div>
+                <div id="calendarDays" class="calendar-grid p-4">
+                    <!-- Calendar days will be rendered here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Interview Details/Feedback Modal -->
+            <div id="interviewModal" class="modal-overlay">
+                <div class="modal-content">
+                    <h3 id="modalTitle" class="text-xl font-semibold text-white opacity-90 mb-4">Schedule Interview</h3>
+                    <form id="interviewForm" class="space-y-4">
+                        <div>
+                            <label for="modalCandidate" class="block text-sm font-medium mb-1 text-white opacity-80">Candidate</label>
+                            <select id="modalCandidate" class="w-full text-sm">
+                                <option value="">Select Candidate</option>
+                                <option value="jane-doe">Jane Doe (Senior Software Engineer)</option>
+                                <option value="john-smith">John Smith (Product Manager)</option>
+                                <option value="emily-white">Emily White (Marketing Specialist)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="modalJob" class="block text-sm font-medium mb-1 text-white opacity-80">Job Position</label>
+                            <select id="modalJob" class="w-full text-sm">
+                                <option value="">Select Job</option>
+                                <option value="senior-software-engineer">Senior Software Engineer</option>
+                                <option value="product-manager">Product Manager</option>
+                                <option value="marketing-specialist">Marketing Specialist</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="modalInterviewer" class="block text-sm font-medium mb-1 text-white opacity-80">Interviewer(s)</label>
+                            <input type="text" id="modalInterviewer" placeholder="e.g., John Smith, Sarah Green" class="w-full text-sm">
+                            <p class="text-xs text-text-secondary mt-1">Separate names with commas.</p>
+                        </div>
+                        <div>
+                            <label for="modalInterviewType" class="block text-sm font-medium mb-1 text-white opacity-80">Interview Type</label>
+                            <select id="modalInterviewType" class="w-full text-sm">
+                                <option value="">Select Type</option>
+                                <option value="technical">Technical</option>
+                                <option value="behavioral">Behavioral</option>
+                                <option value="hr">HR Screen</option>
+                                <option value="final">Final Round</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="modalDate" class="block text-sm font-medium mb-1 text-white opacity-80">Date</label>
+                                <input type="date" id="modalDate" class="w-full text-sm">
+                            </div>
+                            <div>
+                                <label for="modalTime" class="block text-sm font-medium mb-1 text-white opacity-80">Time</label>
+                                <input type="time" id="modalTime" class="w-full text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="modalVideoLink" class="block text-sm font-medium mb-1 text-white opacity-80">Video Conference Link</label>
+                            <input type="text" id="modalVideoLink" placeholder="e.g., Zoom, Google Meet link" class="w-full text-sm">
+                            <p class="text-xs text-text-secondary mt-1">Leave empty to auto-generate (simulated).</p>
+                        </div>
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button type="button" id="closeModalBtn" class="px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors">Cancel</button>
+                            <button type="submit" class="px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors">Schedule</button>
+                        </div>
+                    </form>
+                    <!-- For viewing/editing existing interview details/feedback -->
+                    <div id="interviewDetails" class="hidden mt-6 space-y-4">
+                        <div>
+                            <p class="text-sm"><span class="font-medium text-white opacity-90">Candidate:</span> <span id="viewCandidateName"></span></p>
+                            <p class="text-sm"><span class="font-medium text-white opacity-90">Job:</span> <span id="viewJobTitle"></span></p>
+                            <p class="text-sm"><span class="font-medium text-white opacity-90">Type:</span> <span id="viewInterviewType"></span></p>
+                            <p class="text-sm"><span class="font-medium text-white opacity-90">Date & Time:</span> <span id="viewDateTime"></span></p>
+                            <p class="text-sm"><span class="font-medium text-white opacity-90">Interviewer(s):</span> <span id="viewInterviewer"></span></p>
+                            <p class="text-sm"><span class="font-medium text-white opacity-90">Video Link:</span> <a href="#" id="viewVideoLink" class="text-accent-blue hover:underline" target="_blank"></a></p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-white opacity-90 text-lg mb-2">Feedback</h4>
+                            <textarea id="feedbackText" class="w-full h-32 p-3 text-sm bg-tertiary-bg border-transparent rounded-lg resize-y" placeholder="Enter interview feedback..."></textarea>
+                            <button id="saveFeedbackBtn" class="mt-3 px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors">Save Feedback</button>
+                        </div>
+                        <div class="flex justify-end gap-3">
+                            <button type="button" id="closeViewModalBtn" class="px-4 py-2 text-sm bg-tertiary-bg hover:bg-divider transition-colors">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Box for notifications -->
+            <div id="messageBox" class="message-box"></div>
+        </main>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarItems = document.querySelectorAll('.sidebar-item');
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const messageBox = document.getElementById('messageBox');
+
+        const scheduleInterviewBtn = document.getElementById('scheduleInterviewBtn');
+        const interviewModal = document.getElementById('interviewModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const closeViewModalBtn = document.getElementById('closeViewModalBtn');
+        const interviewForm = document.getElementById('interviewForm');
+        const interviewDetails = document.getElementById('interviewDetails');
+        const modalTitle = document.getElementById('modalTitle');
+
+        const currentMonthYearDisplay = document.getElementById('currentMonthYear');
+        const calendarDaysContainer = document.getElementById('calendarDays');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+
+        // --- Simulated User Data ---
+        const loggedInUser = {
+            name: "Akshay Arvind",
+            email: "akshay@example.com"
+        };
+        userNameDisplay.textContent = loggedInUser.name;
+
+        // --- Simulated Interview Data ---
+        // Storing interviews with a unique ID for each
+        let interviews = [
+            {
+                id: 'int-1',
+                candidate: 'Jane Doe',
+                candidateId: 'candidate123',
+                job: 'Senior Software Engineer',
+                interviewer: 'Akshay Arvind',
+                type: 'Technical',
+                date: '2024-06-18', // June 18th
+                time: '10:00',
+                videoLink: 'https://meet.google.com/xyz-abc-def',
+                feedback: 'Candidate showed strong technical skills. Good problem-solving approach. Needs to improve on system design depth. Overall positive.'
+            },
+            {
+                id: 'int-2',
+                candidate: 'John Smith',
+                candidateId: 'candidate456',
+                job: 'Product Manager',
+                interviewer: 'Sarah Green',
+                type: 'Behavioral',
+                date: '2024-06-20', // June 20th
+                time: '14:30',
+                videoLink: 'https://zoom.us/j/1234567890',
+                feedback: 'Excellent cultural fit. Communicates clearly and demonstrates strong leadership potential. Very enthusiastic about the role.'
+            },
+            {
+                id: 'int-3',
+                candidate: 'Emily White',
+                candidateId: 'candidate789',
+                job: 'Marketing Specialist',
+                interviewer: 'Akshay Arvind',
+                type: 'HR Screen',
+                date: '2024-06-25', // June 25th
+                time: '11:00',
+                videoLink: 'https://teams.microsoft.com/l/meetup/join/...',
+                feedback: 'Good initial screen. Experience aligns with requirements. Will proceed to the next round.'
+            }
+            // Add more simulated interviews as needed
+        ];
+
+        /**
+         * Displays a message in the message box.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success', 'error', or 'info'.
+         */
+        function showMessage(message, type = 'info') {
+            messageBox.textContent = message;
+            messageBox.className = 'message-box show'; // Reset classes and add 'show'
+            // For a real app, you might add type-specific classes like 'success' or 'error'
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // --- Sidebar Toggle Functionality ---
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+        // --- Sidebar Navigation Functionality (Using full page redirects) ---
+        sidebarItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // Remove active class from all sidebar items
+                sidebarItems.forEach(i => i.classList.remove('active'));
+                // Add active class to the clicked item
+                item.classList.add('active'); // This will be reset on new page load, but good for visual feedback
+
+                const page = item.dataset.page;
+                console.log(`Navigating to: ${page} page`);
+
+                switch (page) {
+                    case 'dashboard':
+                        window.location.href = 'dashboard.html';
+                        break;
+                    case 'job-listings':
+                        window.location.href = 'job_listings.html';
+                        break;
+                    case 'applicants':
+                        window.location.href = 'applicants.html';
+                        break;
+                    case 'interviews':
+                        // Already on this page, do nothing or re-render if needed
+                        break;
+                    case 'reports':
+                        showMessage('Navigating to Reports page (not implemented yet)...');
+                        // window.location.href = 'reports.html'; // Future page
+                        break;
+                    case 'settings':
+                        showMessage('Navigating to Settings page (not implemented yet)...');
+                        // window.location.href = 'settings.html'; // Future page
+                        break;
+                    case 'logout':
+                        showMessage('Logging out...');
+                        setTimeout(() => {
+                            window.location.href = 'index.html'; // Redirect to login page
+                        }, 1000);
+                        break;
+                }
+            });
+        });
+
+        // --- Calendar Functionality ---
+
+        /**
+         * Renders the calendar days for the current month.
+         */
+        function renderCalendar() {
+            calendarDaysContainer.innerHTML = ''; // Clear previous days
+            currentMonthYearDisplay.textContent = new Date(currentYear, currentMonth).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay(); // 0 for Sunday, 1 for Monday...
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate(); // Last day of current month
+
+            // Add empty days for the start of the month
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.classList.add('calendar-day', 'empty');
+                calendarDaysContainer.appendChild(emptyDay);
+            }
+
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('calendar-day');
+                dayElement.dataset.date = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                const dayNumber = document.createElement('span');
+                dayNumber.classList.add('calendar-day-number');
+                dayNumber.textContent = day;
+                dayElement.appendChild(dayNumber);
+
+                // Highlight today's date
+                const today = new Date();
+                if (day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
+                    dayElement.classList.add('today');
+                }
+
+                // Add interviews for this day
+                const interviewsOnThisDay = interviews.filter(int => int.date === dayElement.dataset.date);
+                interviewsOnThisDay.forEach(int => {
+                    const eventElement = document.createElement('div');
+                    eventElement.classList.add('calendar-event');
+                    eventElement.textContent = `${int.time} - ${int.candidate}`;
+                    eventElement.dataset.interviewId = int.id; // Store interview ID for modal
+                    eventElement.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent opening schedule modal when clicking event
+                        openInterviewModal(int.id);
+                    });
+                    dayElement.appendChild(eventElement);
+                });
+
+                dayElement.addEventListener('click', (e) => {
+                    // Pre-fill date when clicking on a calendar day to schedule
+                    openInterviewModal(null, dayElement.dataset.date);
+                });
+
+                calendarDaysContainer.appendChild(dayElement);
+            }
+        }
+
+        prevMonthBtn.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        });
+
+        // --- Interview Modal Functionality ---
+
+        /**
+         * Opens the interview modal for scheduling a new interview or viewing/editing an existing one.
+         * @param {string|null} interviewId - The ID of the interview to view/edit, or null for a new interview.
+         * @param {string|null} prefillDate - Optional date to pre-fill the form (YYYY-MM-DD).
+         */
+        function openInterviewModal(interviewId = null, prefillDate = null) {
+            // Reset form fields
+            interviewForm.reset();
+            interviewForm.classList.remove('hidden');
+            interviewDetails.classList.add('hidden');
+
+            if (interviewId) {
+                modalTitle.textContent = 'Interview Details & Feedback';
+                interviewForm.classList.add('hidden'); // Hide form for editing existing
+                interviewDetails.classList.remove('hidden');
+                closeModalBtn.classList.add('hidden'); // Hide cancel button in view mode
+                closeViewModalBtn.classList.remove('hidden'); // Show close button for view mode
+
+                const interview = interviews.find(int => int.id === interviewId);
+                if (interview) {
+                    document.getElementById('viewCandidateName').textContent = interview.candidate;
+                    document.getElementById('viewJobTitle').textContent = interview.job;
+                    document.getElementById('viewInterviewType').textContent = interview.type;
+                    document.getElementById('viewDateTime').textContent = `${interview.date} at ${interview.time}`;
+                    document.getElementById('viewInterviewer').textContent = interview.interviewer;
+                    const videoLinkElement = document.getElementById('viewVideoLink');
+                    videoLinkElement.href = interview.videoLink;
+                    videoLinkElement.textContent = interview.videoLink;
+                    document.getElementById('feedbackText').value = interview.feedback || '';
+                    document.getElementById('saveFeedbackBtn').dataset.interviewId = interview.id; // Pass ID to save feedback
+                } else {
+                    showMessage('Interview not found.', 'error');
+                    closeInterviewModal();
+                    return;
+                }
+
+            } else {
+                modalTitle.textContent = 'Schedule New Interview';
+                interviewForm.classList.remove('hidden');
+                interviewDetails.classList.add('hidden');
+                closeModalBtn.classList.remove('hidden'); // Show cancel button in schedule mode
+                closeViewModalBtn.classList.add('hidden'); // Hide close button for schedule mode
+
+                if (prefillDate) {
+                    document.getElementById('modalDate').value = prefillDate;
+                }
+            }
+            interviewModal.classList.add('show');
+        }
+
+        /**
+         * Closes the interview modal.
+         */
+        function closeInterviewModal() {
+            interviewModal.classList.remove('show');
+        }
+
+        scheduleInterviewBtn.addEventListener('click', () => openInterviewModal());
+        closeModalBtn.addEventListener('click', closeInterviewModal);
+        closeViewModalBtn.addEventListener('click', closeInterviewModal);
+
+
+        interviewForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const newInterview = {
+                id: 'int-' + Date.now(), // Simple unique ID
+                candidate: document.getElementById('modalCandidate').value,
+                job: document.getElementById('modalJob').value,
+                interviewer: document.getElementById('modalInterviewer').value,
+                type: document.getElementById('modalInterviewType').value,
+                date: document.getElementById('modalDate').value,
+                time: document.getElementById('modalTime').value,
+                videoLink: document.getElementById('modalVideoLink').value || 'Generated Link Placeholder',
+                feedback: '' // No feedback on creation
+            };
+
+            // Basic validation
+            if (!newInterview.candidate || !newInterview.job || !newInterview.interviewer || !newInterview.type || !newInterview.date || !newInterview.time) {
+                showMessage('Please fill all required fields to schedule an interview.', 'error');
+                return;
+            }
+
+            interviews.push(newInterview); // Add to our simulated data
+            showMessage('Interview scheduled successfully!', 'success');
+            console.log('New Interview:', newInterview);
+            closeInterviewModal();
+            renderCalendar(); // Re-render calendar to show new event
+        });
+
+        document.getElementById('saveFeedbackBtn').addEventListener('click', (e) => {
+            const interviewId = e.target.dataset.interviewId;
+            const feedback = document.getElementById('feedbackText').value;
+            const interviewToUpdate = interviews.find(int => int.id === interviewId);
+
+            if (interviewToUpdate) {
+                interviewToUpdate.feedback = feedback;
+                showMessage('Feedback saved successfully!', 'success');
+                console.log(`Feedback for ${interviewToUpdate.candidate} updated.`);
+                closeInterviewModal();
+            } else {
+                showMessage('Error saving feedback: Interview not found.', 'error');
+            }
+        });
+
+
+        // Initialize calendar on page load
+        document.addEventListener('DOMContentLoaded', renderCalendar);
+        console.log("SAPPHIRE Interviews page loaded!");
+    </script>
+</body>
+</html>

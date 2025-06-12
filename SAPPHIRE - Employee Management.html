@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPPHIRE - Employee Management (India)</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS variables from the design philosophy */
+        :root {
+            --color-primary-bg: #1A1A1A;
+            --color-secondary-bg: #2C2C2C;
+            --color-tertiary-bg: #424242;
+            --color-divider: #5E5E5E;
+            --color-text-primary: #E0E0E0;
+            --color-text-secondary: #B0B0B0;
+            --color-accent-green: #28A745;
+            --color-accent-red: #DC3545;
+            --color-accent-blue: #007BFF; /* New accent color for links/buttons */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-primary-bg); /* Primary dark grey background */
+            color: var(--color-text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Global Header Bar - consistent */
+        .header-bar {
+            background-color: var(--color-secondary-bg);
+            border-bottom: 1px solid var(--color-divider);
+        }
+
+        /* Sidebar Navigation - consistent */
+        .sidebar {
+            background-color: var(--color-secondary-bg);
+            border-right: 1px solid var(--color-divider);
+            width: 250px;
+            transition: width 0.3s ease-in-out;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-item-text {
+            display: block;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .sidebar.collapsed .sidebar-item-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar-item {
+            color: var(--color-text-primary);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 1rem;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-item:hover {
+            background-color: var(--color-tertiary-bg);
+        }
+
+        .sidebar-item.active {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-secondary);
+        }
+
+        .sidebar-item i {
+            width: 24px;
+            text-align: center;
+            margin-right: 1rem;
+        }
+
+        .sidebar.collapsed .sidebar-item i {
+            margin-right: 0;
+        }
+
+        /* Content Area */
+        .content-area {
+            background-color: var(--color-primary-bg);
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Card/Panel Styling */
+        .card {
+            background-color: var(--color-secondary-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Input and Button Consistency */
+        input[type="text"], input[type="email"], input[type="password"],
+        input[type="number"], select, textarea, input[type="url"] {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-primary);
+            border: 1px solid transparent;
+            transition: border-color 0.2s ease-in-out;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus,
+        input[type="number"]:focus, select:focus, textarea:focus, input[type="url"]:focus {
+            border-color: var(--color-text-secondary);
+        }
+
+        button {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-primary);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--color-divider);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .section-header {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-divider);
+        }
+        
+        .subsection-header {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            opacity: 0.85;
+            margin-bottom: 1rem;
+        }
+
+        /* Toggle switch styling */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--color-divider);
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--color-text-primary);
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--color-accent-green);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--color-accent-green);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(20px);
+            -ms-transform: translateX(20px);
+            transform: translateX(20px);
+        }
+
+        /* Message Box Styling */
+        #messageBox {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: var(--color-secondary-bg);
+            color: var(--color-text-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #messageBox.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Employee list specific styles */
+        .employee-card {
+            cursor: pointer;
+            border: 1px solid var(--color-tertiary-bg);
+        }
+        .employee-card:hover {
+            border-color: var(--color-text-secondary);
+        }
+        .employee-name-link {
+            color: var(--color-accent-blue);
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+        }
+        .employee-name-link:hover {
+            color: #4CAF50; /* A slightly lighter blue on hover */
+        }
+
+        /* Modal Specific Styles */
+        .modal {
+            position: fixed;
+            z-index: 1001; /* Higher than message box */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--color-secondary-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .close-button {
+            color: var(--color-text-secondary);
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--color-text-primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .salary-table th, .salary-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--color-tertiary-bg);
+            text-align: left;
+        }
+        .salary-table th {
+            font-weight: 600;
+            color: var(--color-text-secondary);
+        }
+        .salary-table tr:last-child td {
+            border-bottom: none;
+        }
+        .salary-summary-row {
+            font-weight: 700;
+            color: var(--color-text-primary);
+            background-color: var(--color-tertiary-bg);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .sidebar:not(.collapsed) {
+                width: 80px;
+            }
+            .sidebar:not(.collapsed) .sidebar-item-text {
+                display: none;
+            }
+            .sidebar:not(.collapsed) .sidebar-item i {
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--color-divider);
+                display: flex;
+                justify-content: space-around;
+                padding: 0.5rem 0;
+            }
+            .sidebar-item {
+                margin: 0.2rem;
+                padding: 0.5rem;
+                flex-direction: column;
+                font-size: 0.75rem;
+            }
+            .sidebar-item i {
+                margin-bottom: 0.25rem;
+                margin-right: 0;
+            }
+            .sidebar-item-text {
+                display: block;
+                font-size: 0.7rem;
+                line-height: 1;
+                opacity: 1;
+                width: auto;
+            }
+            .content-area {
+                padding: 1rem;
+            }
+            .employee-grid {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 1rem;
+            }
+            .section-header {
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+            }
+            .subsection-header {
+                font-size: 1rem;
+                margin-bottom: 0.75rem;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Bar (Consistent) -->
+    <header class="header-bar p-4 flex items-center justify-between shadow-lg z-20">
+        <div class="flex items-center">
+            <button id="sidebarToggle" class="text-white opacity-80 hover:text-text-secondary transition-colors mr-4 focus:outline-none" aria-label="Toggle sidebar">
+                <i class="fas fa-bars text-lg"></i>
+            </button>
+            <svg class="w-8 h-8 mr-3 text-white opacity-90" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2h1v-3.5c0-.83.67-1.5 1.5-1.5h2.5v2.21c-.61.54-1.28 1.02-2 1.42V19h-1.07zm7-3.93c.88-1.04 1.4-2.31 1.4-3.72 0-.44-.06-.88-.16-1.29L12 9V5h1.07c.75 0 1.47-.14 2.14-.38.74.83 1.25 1.77 1.52 2.79.08.3.14.61.17.93l-1.02 5.06zM9 13.5v-2h2c.83 0 1.5-.67 1.5-1.5V9h-3.5c-.83 0-1.5.67-1.5 1.5v2c0 .83.67 1.5 1.5 1.5h1.5zm5-1.5c0 .83.67 1.5 1.5 1.5h2.5c.83 0 1.5-.67 1.5-1.5V11c0-.83-.67-1.5-1.5-1.5h-2.5c-.83 0-1.5.67-1.5 1.5v2z"/>
+            </svg>
+            <span class="text-xl font-bold text-white opacity-90">SAPPHIRE</span>
+        </div>
+        
+        <div class="relative w-1/3 max-w-md hidden md:block">
+            <input type="text" placeholder="Search anything..." class="w-full pl-10 pr-4 py-2 rounded-lg text-sm bg-tertiary-bg border-transparent focus:border-text-secondary focus:ring-0" aria-label="Global search">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm"></i>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <button class="relative text-white opacity-80 hover:text-text-secondary transition-colors focus:outline-none" aria-label="View notifications">
+                <i class="fas fa-bell text-lg"></i>
+                <span class="absolute top-0 right-0 -mt-1 -mr-1 px-1.5 py-0.5 text-xs font-bold bg-red-600 rounded-full text-white">3</span>
+            </button>
+            <button class="flex items-center space-x-2 text-white opacity-80 hover:opacity-100 transition-opacity focus:outline-none" aria-label="User profile and settings">
+                <img src="https://placehold.co/32x32/424242/E0E0E0?text=A" alt="User Avatar" class="rounded-full border border-divider">
+                <span id="userNameDisplay" class="font-medium text-sm hidden lg:block">Akshay Arvind</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 main-layout">
+        <!-- Sidebar Navigation (Consistent) -->
+        <aside class="sidebar h-full flex flex-col pt-4" id="sidebar">
+            <div class="flex-1">
+                <div class="sidebar-item" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="sidebar-item-text">Dashboard</span>
+                </div>
+                <div class="sidebar-item" data-page="job-listings">
+                    <i class="fas fa-briefcase"></i>
+                    <span class="sidebar-item-text">Job Listings</span>
+                </div>
+                <div class="sidebar-item active" data-page="employees">
+                    <i class="fas fa-users-cog"></i>
+                    <span class="sidebar-item-text">Employees</span>
+                </div>
+                <div class="sidebar-item" data-page="applicants">
+                    <i class="fas fa-users"></i>
+                    <span class="sidebar-item-text">Applicants</span>
+                </div>
+                <div class="sidebar-item" data-page="interviews">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="sidebar-item-text">Interviews</span>
+                </div>
+                <div class="sidebar-item" data-page="reports">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="sidebar-item-text">Reports</span>
+                </div>
+                <div class="sidebar-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span class="sidebar-item-text">Settings</span>
+                </div>
+            </div>
+            <div class="sidebar-item mb-4" data-page="logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="sidebar-item-text">Logout</span>
+            </div>
+        </aside>
+
+        <!-- Content Area: Employees -->
+        <main class="content-area">
+            <h1 class="text-3xl font-bold mb-8 text-white opacity-90">Employee Management</h1>
+
+            <!-- Employee Search and Filters -->
+            <div class="mb-6 flex flex-col md:flex-row gap-4 items-center">
+                <div class="relative flex-grow w-full md:w-auto">
+                    <input type="text" id="employeeSearch" placeholder="Search employees by name or ID..." class="w-full pl-10 pr-4 py-2 rounded-lg text-sm bg-tertiary-bg border-transparent focus:border-text-secondary focus:ring-0" aria-label="Search employees">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm"></i>
+                </div>
+                <button class="px-5 py-2 rounded-lg bg-color-accent-blue hover:bg-blue-700 text-white font-medium transition-colors">
+                    <i class="fas fa-plus-circle mr-2"></i> Add New Employee
+                </button>
+            </div>
+
+            <!-- Employee List -->
+            <div id="employeeList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 employee-grid">
+                <!-- Employee cards will be loaded here by JavaScript -->
+            </div>
+
+            <!-- Message Box for notifications -->
+            <div id="messageBox" class="message-box"></div>
+        </main>
+    </div>
+
+    <!-- Employee Detail Modal -->
+    <div id="employeeDetailModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModalButton">&times;</span>
+            <h2 id="modalEmployeeName" class="text-2xl font-bold mb-4 text-white opacity-90"></h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h3 class="subsection-header">Employee Details</h3>
+                    <p class="text-sm text-text-secondary mb-2"><span class="font-medium text-text-primary">ID:</span> <span id="modalEmployeeId"></span></p>
+                    <p class="text-sm text-text-secondary mb-2"><span class="font-medium text-text-primary">Position:</span> <span id="modalEmployeePosition"></span></p>
+                    <p class="text-sm text-text-secondary mb-2"><span class="font-medium text-text-primary">Department:</span> <span id="modalEmployeeDepartment"></span></p>
+                    <p class="text-sm text-text-secondary mb-2"><span class="font-medium text-text-primary">Email:</span> <span id="modalEmployeeEmail"></span></p>
+                    <p class="text-sm text-text-secondary mb-2"><span class="font-medium text-text-primary">Phone:</span> <span id="modalEmployeePhone"></span></p>
+                    <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary">Joining Date:</span> <span id="modalEmployeeJoiningDate"></span></p>
+                </div>
+
+                <div>
+                    <h3 class="subsection-header">Salary Summary</h3>
+                    <!-- Changed currency to INR -->
+                    <p class="text-base text-text-primary mb-2"><span class="font-semibold">Gross Salary:</span> ₹<span id="modalSalaryGross"></span></p>
+                    <p class="text-base text-text-primary mb-2"><span class="font-semibold">Total Deductions:</span> ₹<span id="modalSalaryDeductions"></span></p>
+                    <p class="text-lg font-bold text-accent-green"><span class="font-semibold">Net Pay:</span> ₹<span id="modalSalaryNet"></span></p>
+                </div>
+            </div>
+
+            <h3 class="subsection-header mt-6 mb-3">Salary Breakdown</h3>
+            <div class="overflow-x-auto rounded-lg border border-divider">
+                <table class="min-w-full salary-table">
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th class="text-right">Amount (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salaryBreakdownTableBody">
+                        <!-- Salary breakdown items will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarItems = document.querySelectorAll('.sidebar-item');
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const messageBox = document.getElementById('messageBox');
+        const employeeList = document.getElementById('employeeList');
+        const employeeSearch = document.getElementById('employeeSearch');
+
+        // Modal elements
+        const employeeDetailModal = document.getElementById('employeeDetailModal');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const modalEmployeeName = document.getElementById('modalEmployeeName');
+        const modalEmployeeId = document.getElementById('modalEmployeeId');
+        const modalEmployeePosition = document.getElementById('modalEmployeePosition');
+        const modalEmployeeDepartment = document.getElementById('modalEmployeeDepartment');
+        const modalEmployeeEmail = document.getElementById('modalEmployeeEmail');
+        const modalEmployeePhone = document.getElementById('modalEmployeePhone');
+        const modalEmployeeJoiningDate = document.getElementById('modalEmployeeJoiningDate');
+        const modalSalaryGross = document.getElementById('modalSalaryGross');
+        const modalSalaryDeductions = document.getElementById('modalSalaryDeductions');
+        const modalSalaryNet = document.getElementById('modalSalaryNet');
+        const salaryBreakdownTableBody = document.getElementById('salaryBreakdownTableBody');
+
+        // --- Simulated User Data ---
+        const loggedInUser = {
+            name: "Akshay Arvind",
+            email: "akshay@example.com"
+        };
+        userNameDisplay.textContent = loggedInUser.name;
+
+        // --- Helper function to generate a random number within a range ---
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // --- Helper function to generate a random date within a range ---
+        function getRandomDate(start, end) {
+            const date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+            return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+        }
+
+        // --- Simulated Employee Data (50 samples for India) ---
+        const firstNames = ['Amit', 'Priya', 'Rajesh', 'Deepa', 'Sanjay', 'Pooja', 'Rahul', 'Neha', 'Vikram', 'Anjali', 'Arjun', 'Meera', 'Gaurav', 'Shweta', 'Karan', 'Ritika', 'Vivek', 'Aisha', 'Rohan', 'Sneha', 'Ashish', 'Monica', 'Dhruv', 'Kriti', 'Pranav', 'Lakshmi', 'Vishal', 'Jasmine', 'Aditya', 'Zara'];
+        const lastNames = ['Sharma', 'Singh', 'Kumar', 'Gupta', 'Reddy', 'Pillai', 'Jha', 'Yadav', 'Malhotra', 'Bhatia', 'Mehta', 'Verma', 'Chopra', 'Dubey', 'Saxena', 'Tiwari', 'Mishra', 'Agarwal', 'Roy', 'Chakraborty'];
+        const positions = [
+            'Software Engineer', 'Marketing Manager', 'HR Executive', 'Financial Analyst',
+            'Product Designer', 'Data Scientist', 'Business Development Executive',
+            'Operations Manager', 'Content Writer', 'Sales Representative',
+            'Quality Assurance Engineer', 'Network Administrator', 'Customer Support Specialist',
+            'UI/UX Developer', 'Accountant', 'Project Manager', 'Legal Advisor',
+            'Recruitment Specialist', 'Technical Lead', 'DevOps Engineer'
+        ];
+        const departments = [
+            'Engineering', 'Marketing', 'Human Resources', 'Finance', 'Design',
+            'Data Science', 'Sales', 'Operations', 'Content', 'IT', 'Legal'
+        ];
+
+        const employeesData = [];
+        const startJoinDate = new Date(2015, 0, 1);
+        const endJoinDate = new Date(2023, 11, 31);
+
+        for (let i = 1; i <= 50; i++) {
+            const firstName = firstNames[getRandomInt(0, firstNames.length - 1)];
+            const lastName = lastNames[getRandomInt(0, lastNames.length - 1)];
+            const name = `${firstName} ${lastName}`;
+            const id = `EMP${String(i).padStart(3, '0')}`;
+            const position = positions[getRandomInt(0, positions.length - 1)];
+            const department = departments[getRandomInt(0, departments.length - 1)];
+            const email = `${firstName.toLowerCase()}.${lastName.toLowerCase().charAt(0)}@example.com`;
+            const phone = `+91-${getRandomInt(700, 999)}-${getRandomInt(100, 999)}-${getRandomInt(1000, 9999)}`;
+            const joiningDate = getRandomDate(startJoinDate, endJoinDate);
+
+            // Simulate base monthly salary in INR (e.g., 30,000 to 1,50,000 per month)
+            const baseSalary = getRandomInt(30000, 150000);
+
+            // Calculate Indian components
+            const basic = Math.round(baseSalary * (getRandomInt(40, 50) / 100)); // 40-50% of base
+            const hra = Math.round(basic * (getRandomInt(40, 50) / 100)); // 40-50% of basic
+            const specialAllowance = baseSalary - basic - hra; // Remaining portion
+
+            const conveyance = getRandomInt(1000, 2000); // Fixed or small allowance
+            const medical = getRandomInt(500, 1500); // Fixed or small allowance
+            const lta = getRandomInt(0, 3000); // Optional LTA
+
+            const earnings = [
+                { name: 'Basic Salary', amount: basic },
+                { name: 'House Rent Allowance (HRA)', amount: hra },
+                { name: 'Special Allowance', amount: specialAllowance },
+                { name: 'Conveyance Allowance', amount: conveyance },
+                { name: 'Medical Allowance', amount: medical },
+            ];
+            if (lta > 0) earnings.push({ name: 'Leave Travel Allowance (LTA)', amount: lta });
+
+            const grossSalary = earnings.reduce((sum, item) => sum + item.amount, 0);
+
+            // Deductions (simulated as monthly values)
+            const pf = Math.min(Math.round(basic * 0.12), 1800); // Max PF cap for simplicity
+            const professionalTax = (baseSalary > 30000) ? 200 : (baseSalary > 15000 ? 150 : 0); // Simplified slab
+            const incomeTax = Math.round(grossSalary * (getRandomInt(5, 15) / 100)); // Placeholder for TDS
+            const esi = (grossSalary <= 21000) ? Math.round(grossSalary * 0.0075) : 0; // ESI applicable below 21k
+            const loanRepayment = getRandomInt(0, 5000); // Optional loan deduction
+            const otherDeductions = getRandomInt(0, 500);
+
+            const deductions = [
+                { name: 'Provident Fund (PF)', amount: pf },
+                { name: 'Professional Tax (PT)', amount: professionalTax },
+                { name: 'Income Tax (TDS)', amount: incomeTax },
+            ];
+            if (esi > 0) deductions.push({ name: 'Employee State Insurance (ESI)', amount: esi });
+            if (loanRepayment > 0) deductions.push({ name: 'Loan Repayment', amount: loanRepayment });
+            if (otherDeductions > 0) deductions.push({ name: 'Other Deductions', amount: otherDeductions });
+
+
+            const totalDeductions = deductions.reduce((sum, item) => sum + item.amount, 0);
+            const netSalary = grossSalary - totalDeductions;
+
+            employeesData.push({
+                id: id,
+                name: name,
+                position: position,
+                department: department,
+                email: email,
+                phone: phone,
+                joiningDate: joiningDate,
+                salary: {
+                    gross: grossSalary,
+                    totalDeductions: totalDeductions,
+                    net: netSalary,
+                    breakdown: {
+                        earnings: earnings,
+                        deductions: deductions
+                    }
+                }
+            });
+        }
+
+
+        /**
+         * Displays a message in the message box.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success', 'error', or 'info'.
+         */
+        function showMessage(message, type = 'info') {
+            messageBox.textContent = message;
+            // Clear any previous type classes and apply new ones if needed
+            messageBox.className = 'message-box show';
+            if (type === 'success') {
+                messageBox.classList.add('bg-color-accent-green');
+            } else if (type === 'error') {
+                messageBox.classList.add('bg-color-accent-red');
+            } else {
+                messageBox.classList.add('bg-color-secondary-bg'); // Default background
+            }
+
+            setTimeout(() => {
+                messageBox.classList.remove('show', 'bg-color-accent-green', 'bg-color-accent-red', 'bg-color-secondary-bg');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // --- Sidebar Toggle Functionality ---
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+        // --- Sidebar Navigation Functionality (Using full page redirects) ---
+        sidebarItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // Remove active class from all sidebar items
+                sidebarItems.forEach(i => i.classList.remove('active'));
+                // Add active class to the clicked item
+                item.classList.add('active'); 
+
+                const page = item.dataset.page;
+                console.log(`Navigating to: ${page} page`);
+
+                switch (page) {
+                    case 'dashboard':
+                        window.location.href = 'dashboard.html'; // Assuming dashboard.html exists
+                        break;
+                    case 'job-listings':
+                        window.location.href = 'job_listings.html'; // Assuming job_listings.html exists
+                        break;
+                    case 'employees':
+                        // Already on this page
+                        break;
+                    case 'applicants':
+                        window.location.href = 'applicants.html'; // Assuming applicants.html exists
+                        break;
+                    case 'interviews':
+                        window.location.href = 'interviews.html'; // Assuming interviews.html exists
+                        break;
+                    case 'reports':
+                        window.location.href = 'reports.html'; // Assuming reports.html exists
+                        break;
+                    case 'settings':
+                        window.location.href = 'settings.html'; // Link to the original settings page
+                        break;
+                    case 'logout':
+                        showMessage('Logging out...');
+                        setTimeout(() => {
+                            window.location.href = 'index.html'; // Redirect to login page
+                        }, 1000);
+                        break;
+                }
+            });
+        });
+        
+        /**
+         * Renders the employee list based on the provided data.
+         * @param {Array} employees - Array of employee objects.
+         */
+        function renderEmployeeList(employees) {
+            employeeList.innerHTML = ''; // Clear existing list
+            if (employees.length === 0) {
+                employeeList.innerHTML = '<p class="text-text-secondary col-span-full text-center py-8">No employees found matching your search.</p>';
+                return;
+            }
+
+            employees.forEach(employee => {
+                const employeeCard = document.createElement('div');
+                employeeCard.className = 'card employee-card flex flex-col items-start space-y-2';
+                employeeCard.innerHTML = `
+                    <h3 class="text-xl font-semibold mb-2 text-white opacity-90 employee-name-link" data-employee-id="${employee.id}">${employee.name}</h3>
+                    <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary">ID:</span> ${employee.id}</p>
+                    <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary">Position:</span> ${employee.position}</p>
+                    <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary">Department:</span> ${employee.department}</p>
+                    <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary">Email:</span> ${employee.email}</p>
+                    <button class="mt-4 px-4 py-2 rounded-md bg-color-accent-blue hover:bg-blue-700 text-white text-sm font-medium transition-colors view-details-btn" data-employee-id="${employee.id}">
+                        View Details
+                    </button>
+                `;
+                employeeList.appendChild(employeeCard);
+            });
+
+            // Attach event listeners to the new cards/links
+            document.querySelectorAll('.employee-name-link, .view-details-btn').forEach(element => {
+                element.addEventListener('click', (event) => {
+                    const employeeId = event.target.dataset.employeeId;
+                    const selectedEmployee = employeesData.find(emp => emp.id === employeeId);
+                    if (selectedEmployee) {
+                        displayEmployeeDetails(selectedEmployee);
+                    }
+                });
+            });
+        }
+
+        /**
+         * Displays the employee details and salary breakdown in the modal.
+         * @param {Object} employee - The employee object to display.
+         */
+        function displayEmployeeDetails(employee) {
+            modalEmployeeName.textContent = employee.name;
+            modalEmployeeId.textContent = employee.id;
+            modalEmployeePosition.textContent = employee.position;
+            modalEmployeeDepartment.textContent = employee.department;
+            modalEmployeeEmail.textContent = employee.email;
+            modalEmployeePhone.textContent = employee.phone;
+            modalEmployeeJoiningDate.textContent = employee.joiningDate;
+
+            // Format amounts to Indian Rupees (INR)
+            modalSalaryGross.textContent = employee.salary.gross.toLocaleString('en-IN');
+            modalSalaryDeductions.textContent = employee.salary.totalDeductions.toLocaleString('en-IN');
+            modalSalaryNet.textContent = employee.salary.net.toLocaleString('en-IN');
+
+            // Clear previous breakdown
+            salaryBreakdownTableBody.innerHTML = '';
+
+            // Add Earnings
+            // Add Earnings header
+            const earningsHeaderRow = document.createElement('tr');
+            earningsHeaderRow.innerHTML = `<td colspan="2" class="font-bold text-text-primary text-md pt-4">Earnings</td>`;
+            salaryBreakdownTableBody.appendChild(earningsHeaderRow);
+
+            employee.salary.breakdown.earnings.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'text-sm text-text-primary';
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td class="text-right">₹${item.amount.toLocaleString('en-IN')}</td>
+                `;
+                salaryBreakdownTableBody.appendChild(row);
+            });
+
+            // Add a summary for earnings
+            const earningsTotalRow = document.createElement('tr');
+            earningsTotalRow.className = 'salary-summary-row text-sm';
+            earningsTotalRow.innerHTML = `
+                <td><strong>Total Earnings</strong></td>
+                <td class="text-right"><strong>₹${employee.salary.breakdown.earnings.reduce((sum, item) => sum + item.amount, 0).toLocaleString('en-IN')}</strong></td>
+            `;
+            salaryBreakdownTableBody.appendChild(earningsTotalRow);
+
+            // Add a small spacer
+            const spacerRow = document.createElement('tr');
+            spacerRow.innerHTML = `<td colspan="2" class="h-4"></td>`;
+            salaryBreakdownTableBody.appendChild(spacerRow);
+
+            // Add Deductions header
+            const deductionsHeaderRow = document.createElement('tr');
+            deductionsHeaderRow.innerHTML = `<td colspan="2" class="font-bold text-text-primary text-md">Deductions</td>`;
+            salaryBreakdownTableBody.appendChild(deductionsHeaderRow);
+
+            // Add Deductions
+            employee.salary.breakdown.deductions.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'text-sm text-text-primary';
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td class="text-right">-₹${item.amount.toLocaleString('en-IN')}</td>
+                `;
+                salaryBreakdownTableBody.appendChild(row);
+            });
+
+            // Add a summary for deductions
+            const deductionsTotalRow = document.createElement('tr');
+            deductionsTotalRow.className = 'salary-summary-row text-sm';
+            deductionsTotalRow.innerHTML = `
+                <td><strong>Total Deductions</strong></td>
+                <td class="text-right"><strong>-₹${employee.salary.breakdown.deductions.reduce((sum, item) => sum + item.amount, 0).toLocaleString('en-IN')}</strong></td>
+            `;
+            salaryBreakdownTableBody.appendChild(deductionsTotalRow);
+
+            // Show the modal
+            employeeDetailModal.classList.add('show');
+        }
+
+        // --- Modal Close Functionality ---
+        closeModalButton.addEventListener('click', () => {
+            employeeDetailModal.classList.remove('show');
+        });
+
+        // Close modal if clicked outside of modal-content
+        employeeDetailModal.addEventListener('click', (event) => {
+            if (event.target === employeeDetailModal) {
+                employeeDetailModal.classList.remove('show');
+            }
+        });
+
+        // --- Employee Search Functionality ---
+        employeeSearch.addEventListener('keyup', (event) => {
+            const searchTerm = event.target.value.toLowerCase();
+            const filteredEmployees = employeesData.filter(employee => 
+                employee.name.toLowerCase().includes(searchTerm) ||
+                employee.id.toLowerCase().includes(searchTerm) ||
+                employee.position.toLowerCase().includes(searchTerm) ||
+                employee.department.toLowerCase().includes(searchTerm)
+            );
+            renderEmployeeList(filteredEmployees);
+        });
+
+        // Initial render of employee list on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderEmployeeList(employeesData);
+            // Ensure the 'Employees' sidebar item is active on load
+            document.querySelector('.sidebar-item[data-page="employees"]').classList.add('active');
+        });
+
+        console.log("SAPPHIRE Employee Management page loaded with Indian data!");
+    </script>
+</body>
+</html>

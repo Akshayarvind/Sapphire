@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPPHIRE - Dashboard</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS to override/enhance Tailwind and apply specific design philosophy */
+        :root {
+            --color-primary-bg: #1A1A1A;
+            --color-secondary-bg: #2C2C2C;
+            --color-tertiary-bg: #424242;
+            --color-divider: #5E5E5E;
+            --color-text-primary: #E0E0E0;
+            --color-text-secondary: #B0B0B0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-primary-bg); /* Primary dark grey background */
+            color: var(--color-text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column; /* Ensure header, sidebar, content lay out correctly */
+            overflow-x: hidden; /* Prevent horizontal scroll for now */
+        }
+
+        /* Global Header Bar */
+        .header-bar {
+            background-color: var(--color-secondary-bg); /* Slightly darker grey for header */
+            border-bottom: 1px solid var(--color-divider); /* Thin divider line */
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            background-color: var(--color-secondary-bg); /* Secondary dark grey for sidebar */
+            border-right: 1px solid var(--color-divider); /* Thin divider line */
+            width: 250px; /* Fixed width */
+            transition: width 0.3s ease-in-out; /* Smooth collapse transition */
+            flex-shrink: 0; /* Prevent sidebar from shrinking */
+        }
+
+        .sidebar.collapsed {
+            width: 80px; /* Collapsed width for icons only */
+        }
+
+        .sidebar-item-text {
+            display: block; /* Initially visible */
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .sidebar.collapsed .sidebar-item-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar-item {
+            color: var(--color-text-primary);
+            border-radius: 8px; /* Rounded items */
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 1rem;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-item:hover {
+            background-color: var(--color-tertiary-bg); /* Subtle lighter grey on hover */
+        }
+
+        .sidebar-item.active {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-secondary);
+        }
+
+        .sidebar-item i {
+            width: 24px; /* Fixed width for icon to prevent text jump */
+            text-align: center;
+            margin-right: 1rem;
+        }
+
+        .sidebar.collapsed .sidebar-item i {
+            margin-right: 0;
+        }
+
+        /* Content Area */
+        .content-area {
+            background-color: var(--color-primary-bg); /* Primary dark grey background */
+            flex-grow: 1; /* Take up remaining space */
+            padding: 2rem;
+            overflow-y: auto; /* Enable vertical scrolling if content overflows */
+        }
+
+        /* Card Styling */
+        .card {
+            background-color: var(--color-secondary-bg); /* Secondary dark grey for cards/panels */
+            border-radius: 12px; /* Rounded corners */
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+
+        /* Input and Button Consistency */
+        input[type="text"], input[type="email"], input[type="password"],
+        .search-bar input {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-primary);
+            border: 1px solid transparent;
+            transition: border-color 0.2s ease-in-out;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus,
+        .search-bar input:focus {
+            border-color: var(--color-text-secondary);
+        }
+
+        button {
+            background-color: var(--color-tertiary-bg);
+            color: var(--color-text-primary);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--color-divider);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Chart Placeholder Styling (simple div-based) */
+        .chart-placeholder {
+            background-color: var(--color-tertiary-bg); /* Darker grey for chart background */
+            height: 250px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-secondary);
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        /* Message Box Styling */
+        #messageBox {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: var(--color-secondary-bg);
+            color: var(--color-text-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #messageBox.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Responsive adjustments for sidebar */
+        @media (max-width: 1024px) {
+            .sidebar:not(.collapsed) { /* Only apply if not already collapsed by JS toggle */
+                width: 80px; /* Always collapsed on smaller screens if not explicitly open */
+            }
+            .sidebar:not(.collapsed) .sidebar-item-text {
+                display: none;
+            }
+            .sidebar:not(.collapsed) .sidebar-item i {
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column; /* Stack sidebar and content on very small screens */
+            }
+            .sidebar {
+                width: 100%; /* Full width sidebar */
+                border-right: none;
+                border-bottom: 1px solid var(--color-divider);
+                display: flex; /* Make sidebar items horizontal */
+                justify-content: space-around;
+                padding: 0.5rem 0;
+            }
+            .sidebar-item {
+                margin: 0.2rem;
+                padding: 0.5rem;
+                flex-direction: column; /* Stack icon and text vertically */
+                font-size: 0.75rem;
+            }
+            .sidebar-item i {
+                margin-bottom: 0.25rem;
+                margin-right: 0;
+            }
+            .sidebar-item-text {
+                display: block;
+                font-size: 0.7rem;
+                line-height: 1;
+                opacity: 1;
+                width: auto;
+            }
+            .content-area {
+                padding: 1rem;
+            }
+            .metric-card, .panel {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Bar -->
+    <header class="header-bar p-4 flex items-center justify-between shadow-lg z-20">
+        <div class="flex items-center">
+            <!-- Sidebar Toggle Button -->
+            <button id="sidebarToggle" class="text-white opacity-80 hover:text-text-secondary transition-colors mr-4 focus:outline-none" aria-label="Toggle sidebar">
+                <i class="fas fa-bars text-lg"></i>
+            </button>
+            <!-- Monochromatic Company Logo -->
+            <svg class="w-8 h-8 mr-3 text-white opacity-90" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2h1v-3.5c0-.83.67-1.5 1.5-1.5h2.5v2.21c-.61.54-1.28 1.02-2 1.42V19h-1.07zm7-3.93c.88-1.04 1.4-2.31 1.4-3.72 0-.44-.06-.88-.16-1.29L12 9V5h1.07c.75 0 1.47-.14 2.14-.38.74.83 1.25 1.77 1.52 2.79.08.3.14.61.17.93l-1.02 5.06zM9 13.5v-2h2c.83 0 1.5-.67 1.5-1.5V9h-3.5c-.83 0-1.5.67-1.5 1.5v2c0 .83.67 1.5 1.5 1.5h1.5zm5-1.5c0 .83.67 1.5 1.5 1.5h2.5c.83 0 1.5-.67 1.5-1.5V11c0-.83-.67-1.5-1.5-1.5h-2.5c-.83 0-1.5.67-1.5 1.5v2z"/>
+            </svg>
+            <span class="text-xl font-bold text-white opacity-90">SAPPHIRE</span>
+        </div>
+        
+        <!-- Global Search Bar -->
+        <div class="relative w-1/3 max-w-md hidden md:block">
+            <input type="text" placeholder="Search anything..." class="w-full pl-10 pr-4 py-2 rounded-lg text-sm bg-tertiary-bg border-transparent focus:border-text-secondary focus:ring-0" aria-label="Global search">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm"></i>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <!-- Notification Icon -->
+            <button class="relative text-white opacity-80 hover:text-text-secondary transition-colors focus:outline-none" aria-label="View notifications">
+                <i class="fas fa-bell text-lg"></i>
+                <span class="absolute top-0 right-0 -mt-1 -mr-1 px-1.5 py-0.5 text-xs font-bold bg-red-600 rounded-full text-white">3</span>
+            </button>
+            <!-- User Avatar -->
+            <button class="flex items-center space-x-2 text-white opacity-80 hover:opacity-100 transition-opacity focus:outline-none" aria-label="User profile and settings">
+                <img src="https://placehold.co/32x32/424242/E0E0E0?text=A" alt="User Avatar" class="rounded-full border border-divider">
+                <span id="userNameDisplay" class="font-medium text-sm hidden lg:block">Akshay Arvind</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 main-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar h-full flex flex-col pt-4" id="sidebar">
+            <div class="flex-1">
+                <div class="sidebar-item active" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="sidebar-item-text">Dashboard</span>
+                </div>
+                <div class="sidebar-item" data-page="job-listings">
+                    <i class="fas fa-briefcase"></i>
+                    <span class="sidebar-item-text">Job Listings</span>
+                </div>
+                <div class="sidebar-item" data-page="applicants">
+                    <i class="fas fa-users"></i>
+                    <span class="sidebar-item-text">Applicants</span>
+                </div>
+                <div class="sidebar-item" data-page="interviews">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="sidebar-item-text">Interviews</span>
+                </div>
+                <div class="sidebar-item" data-page="reports">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="sidebar-item-text">Reports</span>
+                </div>
+                <div class="sidebar-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span class="sidebar-item-text">Settings</span>
+                </div>
+            </div>
+            <!-- Logout Button/Link -->
+            <div class="sidebar-item mb-4" data-page="logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="sidebar-item-text">Logout</span>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content-area" id="mainContentArea">
+            <h1 class="text-3xl font-bold mb-8 text-white opacity-90" id="welcomeGreeting">Hello, Akshay Arvind!</h1>
+
+            <!-- Dashboard specific content goes here by default -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="card metric-card">
+                    <h2 class="text-xl font-semibold text-white opacity-80 mb-2">Active Jobs</h2>
+                    <p class="text-4xl font-bold text-text-primary">12</p>
+                    <p class="text-sm text-text-secondary mt-2">Currently open positions</p>
+                </div>
+                <div class="card metric-card">
+                    <h2 class="text-xl font-semibold text-white opacity-80 mb-2">New Applicants</h2>
+                    <p class="text-4xl font-bold text-text-primary">45</p>
+                    <p class="text-sm text-text-secondary mt-2">In the last 7 days</p>
+                </div>
+                <div class="card metric-card">
+                    <h2 class="text-xl font-semibold text-white opacity-80 mb-2">Interviews Scheduled</h2>
+                    <p class="text-4xl font-bold text-text-primary">8</p>
+                    <p class="text-sm text-text-secondary mt-2">For upcoming week</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Recent Activity Panel -->
+                <div class="lg:col-span-2 card panel">
+                    <h2 class="text-xl font-semibold text-white opacity-80 mb-4">Recent Activity</h2>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-text-secondary text-sm">
+                            <i class="fas fa-user-plus mr-3 text-text-secondary"></i>
+                            <span>New applicant <span class="font-medium text-text-primary">Jane Doe</span> for Senior Developer.</span>
+                            <span class="ml-auto text-xs opacity-70">5 min ago</span>
+                        </li>
+                        <li class="flex items-center text-text-secondary text-sm">
+                            <i class="fas fa-briefcase mr-3 text-text-secondary"></i>
+                            <span>Job <span class="font-medium text-text-primary">Marketing Manager</span> published.</span>
+                            <span class="ml-auto text-xs opacity-70">1 hour ago</span>
+                        </li>
+                        <li class="flex items-center text-text-secondary text-sm">
+                            <i class="fas fa-calendar-check mr-3 text-text-secondary"></i>
+                            <span>Interview scheduled for <span class="font-medium text-text-primary">John Smith</span>.</span>
+                            <span class="ml-auto text-xs opacity-70">3 hours ago</span>
+                        </li>
+                        <li class="flex items-center text-text-secondary text-sm">
+                            <i class="fas fa-comment-alt mr-3 text-text-secondary"></i>
+                            <span>Comment added to <span class="font-medium text-text-primary">Emily White's</span> profile.</span>
+                            <span class="ml-auto text-xs opacity-70">yesterday</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Quick Actions Panel -->
+                <div class="card panel">
+                    <h2 class="text-xl font-semibold text-white opacity-80 mb-4">Quick Actions</h2>
+                    <div class="space-y-3">
+                        <button class="quick-action-btn w-full flex items-center justify-center p-3 rounded-lg hover:bg-divider transition-colors" data-action="create-job">
+                            <i class="fas fa-plus-circle mr-2 text-white opacity-80"></i>
+                            <span class="text-white opacity-90 font-medium">Create New Job</span>
+                        </button>
+                        <button class="quick-action-btn w-full flex items-center justify-center p-3 rounded-lg hover:bg-divider transition-colors" data-action="review-applicants">
+                            <i class="fas fa-user-check mr-2 text-white opacity-80"></i>
+                            <span class="text-white opacity-90 font-medium">Review New Applicants</span>
+                        </button>
+                        <button class="quick-action-btn w-full flex items-center justify-center p-3 rounded-lg hover:bg-divider transition-colors" data-action="schedule-interview">
+                            <i class="fas fa-calendar-plus mr-2 text-white opacity-80"></i>
+                            <span class="text-white opacity-90 font-medium">Schedule Interview</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pipeline Overview Chart -->
+            <div class="card panel mt-6">
+                <h2 class="text-xl font-semibold text-white opacity-80 mb-4">Pipeline Overview</h2>
+                <div class="chart-placeholder">
+                    <p>Candidate Pipeline Visualization (Chart Coming Soon!)</p>
+                </div>
+            </div>
+            <!-- Message Box for notifications -->
+            <div id="messageBox" class="message-box"></div>
+        </main>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarItems = document.querySelectorAll('.sidebar-item');
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const welcomeGreeting = document.getElementById('welcomeGreeting');
+        const quickActionButtons = document.querySelectorAll('.quick-action-btn');
+        const messageBox = document.getElementById('messageBox');
+
+        // --- Simulated User Data (in a real app, this would come from backend auth) ---
+        const loggedInUser = {
+            name: "Akshay Arvind",
+            email: "akshay@example.com"
+        };
+
+        // Set user name in header and greeting
+        userNameDisplay.textContent = loggedInUser.name;
+        welcomeGreeting.textContent = `Hello, ${loggedInUser.name}!`;
+
+        /**
+         * Displays a message in the message box.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success', 'error', or 'info'.
+         */
+        function showMessage(message, type = 'info') {
+            messageBox.textContent = message;
+            messageBox.className = 'message-box show'; // Reset classes and add 'show'
+            // For a real app, you might add type-specific classes like 'success' or 'error'
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // --- Sidebar Toggle Functionality ---
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+        // --- Sidebar Navigation Functionality (Using full page redirects) ---
+        sidebarItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // Remove active class from all sidebar items
+                sidebarItems.forEach(i => i.classList.remove('active'));
+                // Add active class to the clicked item
+                item.classList.add('active'); // This will be reset on new page load, but good for visual feedback
+
+                const page = item.dataset.page;
+                console.log(`Navigating to: ${page} page`);
+
+                switch (page) {
+                    case 'dashboard':
+                        // Already on dashboard, do nothing or force reload if needed
+                        break;
+                    case 'job-listings':
+                        window.location.href = 'job_listings.html';
+                        break;
+                    case 'applicants':
+                        window.location.href = 'applicants.html'; // Redirect to the new Applicants page
+                        break;
+                    case 'interviews':
+                        window.location.href = 'interviews.html'; // Redirect to the new Interviews page
+                        break;
+                    case 'reports':
+                        window.location.href = 'reports.html'; // Redirect to the new Reports page
+                        break;
+                    case 'settings':
+                        window.location.href = 'settings.html'; // Redirect to the new Settings page
+                        break;
+                    case 'logout':
+                        showMessage('Logging out...');
+                        setTimeout(() => {
+                            window.location.href = 'index.html'; // Redirect to login page
+                        }, 1000);
+                        break;
+                }
+            });
+        });
+
+        // --- Quick Actions Button Handler ---
+        function handleQuickAction(event) {
+            const action = event.currentTarget.dataset.action;
+            let message = '';
+            switch (action) {
+                case 'create-job':
+                    message = 'Initiating new job creation...';
+                    // In a real app, this might redirect or open a modal:
+                    // window.location.href = 'create_job.html';
+                    break;
+                case 'review-applicants':
+                    message = 'Opening new applicants review...';
+                    window.location.href = 'applicants.html?status=new'; // Example: pre-filter new applicants
+                    break;
+                case 'schedule-interview':
+                    message = 'Launching interview scheduler...';
+                    window.location.href = 'interviews.html'; // Redirect to interviews page
+                    break;
+            }
+            showMessage(message, 'info');
+            console.log(`Quick action: ${action}`);
+        }
+
+        quickActionButtons.forEach(button => {
+            button.addEventListener('click', handleQuickAction);
+        });
+
+    </script>
+</body>
+</html>
